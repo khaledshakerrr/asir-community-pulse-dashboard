@@ -1,7 +1,10 @@
+
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import gspread
 import pandas as pd
@@ -12,6 +15,7 @@ from src.config import (
     CACHE_TIMEOUT_SECONDS,
     EXPECTED_SHEETS,
     GOOGLE_SERVICE_ACCOUNT_JSON,
+    GOOGLE_SERVICE_ACCOUNT_JSON_FILE,
     GOOGLE_SHEET_ID,
     SCOPES,
     cache,
@@ -22,27 +26,71 @@ class GoogleSheetsConnectionError(RuntimeError):
     """Raised when Google Sheets access cannot be established cleanly."""
 
 
-def _validate_env_settings(sheet_id: str, service_account_json: str) -> None:
+def _resolve_env_value(name: str, fallback: str = "") -> str:
+    return os.getenv(name, fallback).strip()
+
+
+def _resolve_credentials_source() -> tuple[str, str]:
+    service_account_json = _resolve_env_value(
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        GOOGLE_SERVICE_ACCOUNT_JSON,
+    )
+    service_account_json_file = _resolve_env_value(
+        "GOOGLE_SERVICE_ACCOUNT_JSON_FILE",
+        GOOGLE_SERVICE_ACCOUNT_JSON_FILE,
+    )
+
+    if service_account_json:
+        return "json", service_account_json
+
+    if service_account_json_file:
+        return "file", service_account_json_file
+
+    return "missing", ""
+
+
+def _validate_env_settings(sheet_id: str, credential_mode: str, credential_value: str) -> None:
     if not sheet_id:
         raise GoogleSheetsConnectionError(
-            "المتغير البيئي GOOGLE_SHEET_ID غير مضبوط. أضفه قبل تشغيل التطبيق."
+            "لم يتم ضبط GOOGLE_SHEET_ID. أضف معرّف ملف Google Sheets داخل ملف .env أو إعدادات النشر ثم أعد تشغيل التطبيق."
         )
 
-    if not service_account_json:
+    if credential_mode == "missing" or not credential_value:
         raise GoogleSheetsConnectionError(
-            "المتغير البيئي GOOGLE_SERVICE_ACCOUNT_JSON غير مضبوط. أضف محتوى حساب الخدمة بصيغة JSON."
+            "بيانات اعتماد Google Sheets غير متوفرة. استخدم GOOGLE_SERVICE_ACCOUNT_JSON للنشر أو GOOGLE_SERVICE_ACCOUNT_JSON_FILE للتشغيل المحلي."
         )
 
 
-def _build_client(sheet_id: str, service_account_json: str) -> gspread.Client:
-    _validate_env_settings(sheet_id, service_account_json)
+def _load_service_account_info(credential_mode: str, credential_value: str) -> dict:
+    if credential_mode == "json":
+        try:
+            return json.loads(credential_value)
+        except json.JSONDecodeError as exc:
+            raise GoogleSheetsConnectionError(
+                "تعذر قراءة GOOGLE_SERVICE_ACCOUNT_JSON. تأكد أن القيمة تحتوي على JSON صالح كامل."
+            ) from exc
+
+    credential_path = Path(credential_value).expanduser()
+    if not credential_path.is_file():
+        raise GoogleSheetsConnectionError(
+            f"مسار ملف الاعتماد غير صالح: {credential_path}. تحقق من GOOGLE_SERVICE_ACCOUNT_JSON_FILE داخل ملف .env."
+        )
 
     try:
-        service_account_info = json.loads(service_account_json)
+        return json.loads(credential_path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise GoogleSheetsConnectionError(
+            f"تعذر قراءة ملف الاعتماد المحلي: {credential_path}."
+        ) from exc
     except json.JSONDecodeError as exc:
         raise GoogleSheetsConnectionError(
-            "تعذر قراءة GOOGLE_SERVICE_ACCOUNT_JSON. تأكد أن القيمة JSON صالحة."
+            f"ملف الاعتماد المحلي لا يحتوي على JSON صالح: {credential_path}."
         ) from exc
+
+
+def _build_client(sheet_id: str, credential_mode: str, credential_value: str) -> gspread.Client:
+    _validate_env_settings(sheet_id, credential_mode, credential_value)
+    service_account_info = _load_service_account_info(credential_mode, credential_value)
 
     try:
         credentials = Credentials.from_service_account_info(
@@ -52,13 +100,13 @@ def _build_client(sheet_id: str, service_account_json: str) -> gspread.Client:
         return gspread.authorize(credentials)
     except Exception as exc:
         raise GoogleSheetsConnectionError(
-            "فشل إنشاء اتصال Google Sheets. تحقق من صلاحيات حساب الخدمة ونطاقات الوصول."
+            "فشل إنشاء اتصال Google Sheets. تحقق من صلاحيات حساب الخدمة ومشاركة الملف مع البريد الخاص بحساب الخدمة."
         ) from exc
 
 
 @cache.memoize(timeout=CACHE_TIMEOUT_SECONDS)
-def _load_sheets_cached(sheet_id: str, service_account_json: str) -> dict:
-    client = _build_client(sheet_id, service_account_json)
+def _load_sheets_cached(sheet_id: str, credential_mode: str, credential_value: str) -> dict:
+    client = _build_client(sheet_id, credential_mode, credential_value)
 
     try:
         workbook = client.open_by_key(sheet_id)
@@ -96,7 +144,9 @@ def _load_sheets_cached(sheet_id: str, service_account_json: str) -> dict:
 
 
 def load_dashboard_datasets() -> dict:
-    return _load_sheets_cached(GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_JSON)
+    sheet_id = _resolve_env_value("GOOGLE_SHEET_ID", GOOGLE_SHEET_ID)
+    credential_mode, credential_value = _resolve_credentials_source()
+    return _load_sheets_cached(sheet_id, credential_mode, credential_value)
 
 
 def clear_dashboard_cache() -> None:

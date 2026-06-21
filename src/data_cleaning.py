@@ -1,5 +1,7 @@
-from __future__ import annotations
 
+from __future__ import annotations
+from dotenv import load_dotenv
+load_dotenv()
 from collections.abc import Iterable
 
 import pandas as pd

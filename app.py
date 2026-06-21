@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from dotenv import load_dotenv
+
+# Load .env before importing any project modules from src/.
+load_dotenv()
+
 import base64
 import secrets
 from datetime import datetime

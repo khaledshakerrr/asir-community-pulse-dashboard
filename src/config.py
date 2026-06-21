@@ -1,6 +1,8 @@
+
 from __future__ import annotations
 
 import os
+
 from dotenv import load_dotenv
 from flask_caching import Cache
 
@@ -11,6 +13,7 @@ APP_SUBTITLE = "Asir Community Pulse Platform"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "").strip()
 GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+GOOGLE_SERVICE_ACCOUNT_JSON_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_FILE", "").strip()
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",

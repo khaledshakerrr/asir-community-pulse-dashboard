@@ -1,5 +1,7 @@
-from __future__ import annotations
 
+from __future__ import annotations
+from dotenv import load_dotenv
+load_dotenv()
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go

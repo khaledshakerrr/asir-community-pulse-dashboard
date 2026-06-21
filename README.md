@@ -48,13 +48,14 @@ pages/
 
 ```env
 GOOGLE_SHEET_ID=your_google_sheet_id
-GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account", ...}
+GOOGLE_SERVICE_ACCOUNT_JSON_FILE=C:\path\to\service-account.json
 APP_PASSWORD=optional_password
 ```
 
 ملاحظات:
 
-- يجب وضع **محتوى** حساب الخدمة داخل `GOOGLE_SERVICE_ACCOUNT_JSON` وليس مسار ملف.
+- في بيئة Windows المحلية استخدم `GOOGLE_SERVICE_ACCOUNT_JSON_FILE` وأشر إلى ملف حساب الخدمة المحلي.
+- في Render أو أي نشر سحابي استخدم `GOOGLE_SERVICE_ACCOUNT_JSON` وضع فيه **محتوى** JSON كاملاً كسلسلة نصية.
 - إذا قمت بضبط `APP_PASSWORD` فسيتم تفعيل حماية Basic Auth بسيطة للتطبيق.
 - لا تقم برفع ملفات اعتماد JSON للمستودع. تمت إضافة `*.json` و `.env` إلى `.gitignore`.
 
@@ -74,29 +75,42 @@ APP_PASSWORD=optional_password
 
 إذا لم تكن `clean_regions_master` متاحة، فسيستخدم التطبيق `regions_master` كبديل مع إظهار تحذير جودة بيانات.
 
-## التشغيل المحلي
+## التشغيل المحلي على Windows
 
-1. أنشئ بيئة افتراضية وثبت الحزم:
+1. أنشئ ملف `.env` داخل مجلد المشروع.
+
+2. أضف القيم الأساسية:
+
+   ```env
+   GOOGLE_SHEET_ID=your_google_sheet_id
+   GOOGLE_SERVICE_ACCOUNT_JSON_FILE=C:\path\to\service-account.json
+   APP_PASSWORD=optional_password
+   ```
+
+3. أنشئ البيئة الافتراضية وثبت الحزم:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-2. شغّل التطبيق:
+4. شغّل التطبيق باستخدام بايثون البيئة الافتراضية:
 
    ```bash
-   python app.py
+   .venv\Scripts\python.exe app.py
    ```
 
-3. افتح المتصفح على:
+5. افتح المتصفح على:
 
    ```text
    http://127.0.0.1:8050
    ```
 
+إذا ظهر تحذير داخل الواجهة بخصوص `GOOGLE_SHEET_ID` أو ملف الاعتماد، راجع قيم ملف `.env` ثم أعد تشغيل التطبيق.
+
 ## النشر على Render
 
 1. أضف نفس متغيرات البيئة في إعدادات الخدمة على Render.
+   استخدم `GOOGLE_SHEET_ID` و `GOOGLE_SERVICE_ACCOUNT_JSON`.
 2. استخدم أمر البناء المعتاد لتثبيت `requirements.txt`.
 3. يستخدم Render الملف:
 
