@@ -1,0 +1,5 @@
+﻿sheet_name,column_name,data_type,description_ar,description_en
+survey_responses_simulated,predicted_disease_ar,Text,المرض المزمن المرجح لكل مشارك,Predicted chronic disease
+survey_responses_simulated,risk_prediction_score,Float,درجة المخاطر العامة من 100,Overall risk score out of 100
+monthly_kpi_summary,avg_waiting_time,Float,متوسط وقت الانتظار الشهري,Average monthly waiting time
+forecasting_data,forecast,Float,القيمة المتوقعة للمؤشر المستقبلي,Forecast value

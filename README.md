@@ -1,19 +1,20 @@
 # asir-community-pulse-dashboard
 
-لوحة معلومات عربية RTL مبنية بـ Dash لصالح **منصة نبض المجتمع - Asir Community Pulse Platform**، مع تصميم تنفيذي مستلهم من ملف العرض المرفق وربط مباشر مع Google Sheets.
+لوحة عربية RTL مبنية بـ `Dash` لصالح **منصة نبض المجتمع**، مع دعم:
 
-## الميزات
+- `Google Sheets` كمصدر الإنتاج الأساسي
+- ملف `Seed` محلي رسمي/مشتق للتشغيل السريع قبل رفع البيانات إلى Google Sheets
 
-- تطبيق Dash متعدد الصفحات مع `server = app.server` للنشر.
-- واجهة عربية `RTL` بخلفية كحلية داكنة وبطاقات بيضاء ولمسات تركوازية.
-- شريط جانبي للتنقل والمرشحات العامة.
-- قراءة البيانات من Google Sheets عبر `gspread` و `google-auth`.
-- تخزين مؤقت للبيانات لمدة 5 دقائق باستخدام `Flask-Caching` لتقليل الطلبات المتكررة.
-- تحذيرات جودة البيانات عند غياب الأوراق أو الأعمدة المطلوبة.
-- رسائل خطأ واضحة عند فشل الاتصال بـ Google Sheets.
-- صفحات للمؤشرات التنفيذية، الخريطة، المؤشرات الصحية، الشكاوى، المبادرات، والتنبؤات.
+## What Is Included
 
-## هيكل المشروع
+- تطبيق Dash متعدد الصفحات مع `server = app.server`
+- واجهة عربية RTL تنفيذية
+- تخزين مؤقت 5 دقائق لبيانات Google Sheets
+- دعم `GOOGLE_SERVICE_ACCOUNT_JSON` للنشر و `GOOGLE_SERVICE_ACCOUNT_JSON_FILE` للتشغيل المحلي
+- ملف `official_google_sheets_seed.xlsx` مبني من مصادر سعودية رسمية ومهيأ لرفعه إلى Google Sheets
+- ملفات تفصيلية إضافية لعسير والقصيم داخل `data/official_curated/`
+
+## Project Structure
 
 ```text
 app.py
@@ -22,44 +23,141 @@ Procfile
 README.md
 .gitignore
 assets/
-  style.css
-  asir-logo.png
-src/
-  config.py
-  google_sheets.py
-  data_cleaning.py
-  kpis.py
-  charts.py
-  maps.py
-  forecasting.py
-  validators.py
+data/
+  official_google_sheets_seed.xlsx
+  official_google_sheet_tabs/
+  official_curated/
+  official_sources/
 pages/
-  overview.py
-  map_dashboard.py
-  health_indicators.py
-  complaints.py
-  initiatives.py
-  forecasting_page.py
+scripts/
+  build_official_seed_data.py
+  generate_synthetic_demo_data.py
+src/
 ```
 
-## متغيرات البيئة
+## Environment Variables
 
-أنشئ ملف `.env` محلياً وأضف القيم التالية:
+أنشئ ملف `.env` داخل مجلد المشروع.
+
+### 1. تشغيل محلي باستخدام ملف Seed الرسمي
+
+```env
+PREFER_LOCAL_DEMO_DATA=1
+LOCAL_DATA_WORKBOOK=data/official_google_sheets_seed.xlsx
+```
+
+### 2. تشغيل محلي مع Google Sheets
 
 ```env
 GOOGLE_SHEET_ID=your_google_sheet_id
 GOOGLE_SERVICE_ACCOUNT_JSON_FILE=C:\path\to\service-account.json
+PREFER_LOCAL_DEMO_DATA=0
 APP_PASSWORD=optional_password
 ```
 
-ملاحظات:
+### 3. النشر على Render
 
-- في بيئة Windows المحلية استخدم `GOOGLE_SERVICE_ACCOUNT_JSON_FILE` وأشر إلى ملف حساب الخدمة المحلي.
-- في Render أو أي نشر سحابي استخدم `GOOGLE_SERVICE_ACCOUNT_JSON` وضع فيه **محتوى** JSON كاملاً كسلسلة نصية.
-- إذا قمت بضبط `APP_PASSWORD` فسيتم تفعيل حماية Basic Auth بسيطة للتطبيق.
-- لا تقم برفع ملفات اعتماد JSON للمستودع. تمت إضافة `*.json` و `.env` إلى `.gitignore`.
+```env
+GOOGLE_SHEET_ID=your_google_sheet_id
+GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account", ...}
+PREFER_LOCAL_DEMO_DATA=0
+APP_PASSWORD=optional_password
+```
 
-## أوراق Google Sheets المتوقعة
+## Windows Local Setup
+
+### 1. تثبيت الحزم
+
+```powershell
+pip install -r requirements.txt
+```
+
+### 2. بناء ملف البيانات الرسمي المحلي
+
+هذا الأمر يولد:
+
+- `data/official_google_sheets_seed.xlsx`
+- ملفات CSV موافقة لتبويبات Google Sheets داخل `data/official_google_sheet_tabs/`
+- ملفات تحليلية إضافية داخل `data/official_curated/`
+
+```powershell
+.venv\Scripts\python.exe scripts\build_official_seed_data.py
+```
+
+### 3. إنشاء `.env`
+
+للتشغيل السريع محليًا:
+
+```env
+PREFER_LOCAL_DEMO_DATA=1
+LOCAL_DATA_WORKBOOK=data/official_google_sheets_seed.xlsx
+```
+
+أو للتشغيل من Google Sheets:
+
+```env
+GOOGLE_SHEET_ID=your_google_sheet_id
+GOOGLE_SERVICE_ACCOUNT_JSON_FILE=C:\path\to\service-account.json
+PREFER_LOCAL_DEMO_DATA=0
+```
+
+### 4. تشغيل التطبيق
+
+```powershell
+.venv\Scripts\python.exe app.py
+```
+
+### 5. فتح المتصفح
+
+```text
+http://127.0.0.1:8050
+```
+
+## Official Data Outputs Added
+
+بعد تشغيل `scripts/build_official_seed_data.py` ستجد:
+
+- `data/official_curated/official_region_summary_2024.csv`
+  - ملخص إقليمي للسعودية مع سكان 2024، المرافق الصحية، الوصول للخدمة، الرضا، الاتجاهات الصحية، ومؤشرات مركبة
+- `data/official_curated/qassim_governorate_population_detail.csv`
+  - تفصيل محافظات القصيم حسب السكان والجنس والجنسية
+- `data/official_curated/asir_cluster_detail_2024.csv`
+  - تفصيل داخلي لعسير بين تجمع عسير وتجمع بيشة
+- `data/official_curated/asir_qassim_workforce_2024.csv`
+  - قوى عاملة صحية مختصرة لعسير والقصيم
+
+## Direct Official Sources Used
+
+- Ministry of Health Statistical Yearbook 2024
+  - [MOH official file](https://www.moh.gov.sa/en/Ministry/Statistics/book/Documents/Statistical-Yearbook-2024.xlsx)
+- GASTAT Healthcare Establishments and Workforce Statistics 2024
+  - [GASTAT official file](https://www.stats.gov.sa/documents/d/guest/healthcare-establishments-and-workforce-statistics-2024-en)
+- GASTAT Healthcare Statistics Publication 2024
+  - [GASTAT official file](https://www.stats.gov.sa/documents/d/guest/healthcare-statistics-publication-2024-en-xlsx)
+- GASTAT Qassim detailed regional results
+  - [GASTAT official file](https://www.stats.gov.sa/documents/20117/2435265/lqsym_4.pdf/93a6ebd5-514b-c787-17e4-239d36b8cce3?t=1735192378913)
+
+## Important Data Honesty Notes
+
+- ليست كل الحقول داخل ملف الـ Seed أرقامًا رسمية مباشرة.
+- الجداول التالية تعتمد مباشرة على مصادر حكومية منشورة أو اشتقاق حسابي مباشر منها:
+  - `regions_master`
+  - `clean_regions_master`
+  - أجزاء كبيرة من `health_facilities`
+  - الملفات داخل `data/official_curated/`
+- الجداول التالية **تمثيلية/مشتقة** ولكنها **معايرة على الأساس الرسمي الإقليمي** حتى يعمل التطبيق الحالي ويعرض خرائط وبطاقات ورسومًا على مستوى السجل:
+  - `survey_responses_simulated`
+  - `complaints_feedback`
+  - `initiatives_programs`
+  - أجزاء من `monthly_kpi_summary`
+  - `forecasting_data`
+
+بمعنى آخر:
+
+- البنية الصحية والسكان والوصول والرضا والاتجاهات الأساسية مبنية على مصادر رسمية
+- بيانات السجل الفردي والتوزيعات الدقيقة والتنبؤ داخل واجهة العرض الحالية هي طبقة مشتقة لخدمة المنتج والعرض
+
+## Google Sheets Tabs Expected
 
 - `clean_regions_master`
 - `regions_master`
@@ -73,59 +171,24 @@ APP_PASSWORD=optional_password
 - `lookup_definitions`
 - `data_dictionary`
 
-إذا لم تكن `clean_regions_master` متاحة، فسيستخدم التطبيق `regions_master` كبديل مع إظهار تحذير جودة بيانات.
+## Deploying to Render
 
-## التشغيل المحلي على Windows
+- استخدم `GOOGLE_SHEET_ID`
+- استخدم `GOOGLE_SERVICE_ACCOUNT_JSON`
+- عطل المصدر المحلي عبر `PREFER_LOCAL_DEMO_DATA=0`
+- أمر التشغيل:
 
-1. أنشئ ملف `.env` داخل مجلد المشروع.
+```text
+web: gunicorn app:server
+```
 
-2. أضف القيم الأساسية:
+## Notes
 
-   ```env
-   GOOGLE_SHEET_ID=your_google_sheet_id
-   GOOGLE_SERVICE_ACCOUNT_JSON_FILE=C:\path\to\service-account.json
-   APP_PASSWORD=optional_password
-   ```
+- التطبيق لا يقرأ Google Sheets عند كل تغيير فلتر؛ يتم استخدام الكاش لمدة 5 دقائق
+- لا ترفع `.env` أو ملفات الاعتماد JSON إلى Git
+- إذا لم تكن إعدادات Google Sheets موجودة، سيعرض التطبيق رسالة واضحة بدل الانهيار
+- إذا أردت إعادة توليد الملف الرسمي بعد تحديث المصادر، شغل:
 
-3. أنشئ البيئة الافتراضية وثبت الحزم:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. شغّل التطبيق باستخدام بايثون البيئة الافتراضية:
-
-   ```bash
-   .venv\Scripts\python.exe app.py
-   ```
-
-5. افتح المتصفح على:
-
-   ```text
-   http://127.0.0.1:8050
-   ```
-
-إذا ظهر تحذير داخل الواجهة بخصوص `GOOGLE_SHEET_ID` أو ملف الاعتماد، راجع قيم ملف `.env` ثم أعد تشغيل التطبيق.
-
-## النشر على Render
-
-1. أضف نفس متغيرات البيئة في إعدادات الخدمة على Render.
-   استخدم `GOOGLE_SHEET_ID` و `GOOGLE_SERVICE_ACCOUNT_JSON`.
-2. استخدم أمر البناء المعتاد لتثبيت `requirements.txt`.
-3. يستخدم Render الملف:
-
-   ```text
-   Procfile
-   ```
-
-4. أمر التشغيل:
-
-   ```text
-   web: gunicorn app:server
-   ```
-
-## ملاحظات هندسية
-
-- لا يتم جلب Google Sheets عند كل ضغطة على المرشحات؛ تتم إعادة استخدام النسخة المخزنة مؤقتاً لمدة 5 دقائق.
-- جميع المؤشرات الأساسية مشتقة من البيانات الحالية، وليست أرقاماً ثابتة داخل الكود.
-- تمت كتابة الوحدات بشكل مستقل لتسهيل التوسع لاحقاً بإضافة صفحات أو مؤشرات جديدة.
+```powershell
+.venv\Scripts\python.exe scripts\build_official_seed_data.py
+```

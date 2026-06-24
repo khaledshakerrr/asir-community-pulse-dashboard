@@ -1,7 +1,5 @@
-
 from __future__ import annotations
-from dotenv import load_dotenv
-load_dotenv()
+
 import pandas as pd
 
 from src.config import HIGH_RISK_THRESHOLD
@@ -42,6 +40,7 @@ def calculate_overview_kpis(filtered_data: dict) -> list[dict[str, str]]:
     regions = tables.get("clean_regions_master", pd.DataFrame())
 
     total_responses = int(survey["response_id"].nunique()) if "response_id" in survey.columns else len(survey)
+
     pulse_score = pd.to_numeric(survey.get("community_pulse_index"), errors="coerce").mean()
     if pd.isna(pulse_score):
         pulse_score = pd.to_numeric(monthly.get("community_pulse_index"), errors="coerce").mean()
@@ -58,17 +57,17 @@ def calculate_overview_kpis(filtered_data: dict) -> list[dict[str, str]]:
     high_risk_areas = 0
     if "priority_level" in regions.columns:
         high_risk_areas = int(
-            regions["priority_level"].astype(str).str.contains("مرتفع|High", case=False, na=False).sum()
+            regions["priority_level"].astype(str).str.contains("مرتفع|عالي|High", case=False, na=False).sum()
         )
     elif "risk_prediction_score" in survey.columns and "region_id" in survey.columns:
         region_risk = survey.groupby("region_id", dropna=True)["risk_prediction_score"].mean()
         high_risk_areas = int((region_risk >= HIGH_RISK_THRESHOLD).sum())
 
     return [
-        {"label": "إجمالي الاستجابات", "value": _format_number(total_responses), "hint": "عدد المشاركات بعد تطبيق المرشحات"},
-        {"label": "متوسط مؤشر نبض المجتمع", "value": _format_number(pulse_score, decimals=1), "hint": "متوسط community pulse index"},
-        {"label": "معدل الرضا", "value": _format_number(satisfaction_rate, suffix="%", decimals=1), "hint": "مستخرج من التقييمات أو الملخص الشهري"},
-        {"label": "عدد الشكاوى والملاحظات", "value": _format_number(complaints_count), "hint": "إجمالي الحالات المسجلة"},
-        {"label": "متوسط وقت الانتظار", "value": _format_number(waiting_time, suffix=" دقيقة", decimals=0), "hint": "من جدول الأهداف والمؤشرات عند توفره"},
-        {"label": "المناطق عالية الخطورة", "value": _format_number(high_risk_areas), "hint": "حسب أولوية المنطقة أو متوسط مؤشر المخاطر"},
+        {"label": "إجمالي المشاركات", "value": _format_number(total_responses), "hint": "عدد السجلات بعد تطبيق جميع المرشحات"},
+        {"label": "مؤشر نبض المجتمع", "value": _format_number(pulse_score, decimals=1), "hint": "متوسط المؤشر العام للمشاركات الحالية"},
+        {"label": "نسبة الرضا", "value": _format_number(satisfaction_rate, suffix="%", decimals=1), "hint": "مستخلصة من تقييمات المشاركين أو الملخص الشهري"},
+        {"label": "عدد الشكاوى", "value": _format_number(complaints_count), "hint": "إجمالي الشكاوى والملاحظات المسجلة"},
+        {"label": "متوسط وقت الانتظار", "value": _format_number(waiting_time, suffix=" دقيقة", decimals=0), "hint": "مقاساً من جدول الأهداف والمؤشرات عند توفره"},
+        {"label": "المناطق عالية الخطورة", "value": _format_number(high_risk_areas), "hint": "بحسب مستوى أولوية المنطقة أو مؤشر المخاطر"},
     ]

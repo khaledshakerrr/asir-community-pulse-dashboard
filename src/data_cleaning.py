@@ -1,7 +1,5 @@
-
 from __future__ import annotations
-from dotenv import load_dotenv
-load_dotenv()
+
 from collections.abc import Iterable
 
 import pandas as pd
@@ -28,10 +26,13 @@ def _coerce_numeric(frame: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame
     return frame
 
 
+def _is_known_value(value: str | None, options: set[str]) -> bool:
+    normalized = str(value or "").strip()
+    return bool(normalized) and normalized in options
+
+
 def prepare_dashboard_data(data_bundle: dict) -> dict:
-    tables = {
-        sheet_name: frame.copy() for sheet_name, frame in data_bundle.get("tables", {}).items()
-    }
+    tables = {sheet_name: frame.copy() for sheet_name, frame in data_bundle.get("tables", {}).items()}
 
     if tables.get("clean_regions_master", pd.DataFrame()).empty:
         tables["clean_regions_master"] = tables.get("regions_master", pd.DataFrame()).copy()
@@ -40,13 +41,34 @@ def prepare_dashboard_data(data_bundle: dict) -> dict:
     survey = _coerce_dates(survey, ["response_date"])
     survey = _coerce_numeric(
         survey,
-        ["bmi_value", "satisfaction_score", "qol_score", "community_pulse_index", "risk_prediction_score"],
+        [
+            "bmi_value",
+            "satisfaction_score",
+            "qol_score",
+            "community_pulse_index",
+            "risk_prediction_score",
+            "diabetes_risk_score",
+            "hypertension_risk_score",
+            "asthma_risk_score",
+            "obesity_risk_score",
+            "waiting_time_minutes",
+        ],
     )
     tables["survey_responses_simulated"] = survey
 
     monthly = tables.get("monthly_kpi_summary", pd.DataFrame())
     monthly = _coerce_dates(monthly, ["period_month"])
-    monthly = _coerce_numeric(monthly, ["community_pulse_index", "satisfaction_rate"])
+    monthly = _coerce_numeric(
+        monthly,
+        [
+            "community_pulse_index",
+            "satisfaction_rate",
+            "complaints_count",
+            "avg_waiting_time",
+            "chronic_cases_rate",
+            "forecast_next_month",
+        ],
+    )
     if "satisfaction_rate" in monthly.columns:
         monthly["satisfaction_rate"] = _normalize_percentage(monthly["satisfaction_rate"])
     tables["monthly_kpi_summary"] = monthly
@@ -66,10 +88,7 @@ def prepare_dashboard_data(data_bundle: dict) -> dict:
     tables["initiatives_programs"] = initiatives
 
     facilities = tables.get("health_facilities", pd.DataFrame())
-    facilities = _coerce_numeric(
-        facilities,
-        ["readiness_score", "beds_occupied_pct", "doctors_count"],
-    )
+    facilities = _coerce_numeric(facilities, ["facility_count", "readiness_score", "beds_occupied_pct", "doctors_count"])
     for column in ["readiness_score", "beds_occupied_pct"]:
         if column in facilities.columns:
             facilities[column] = _normalize_percentage(facilities[column])
@@ -84,6 +103,102 @@ def prepare_dashboard_data(data_bundle: dict) -> dict:
     forecast = _coerce_numeric(forecast, ["actual", "forecast", "lower_bound", "upper_bound"])
     tables["forecasting_data"] = forecast
 
+    official_region_summary = tables.get("official_region_summary", pd.DataFrame())
+    official_region_summary = _coerce_numeric(
+        official_region_summary,
+        [
+            "population_total",
+            "latitude",
+            "longitude",
+            "hospitals_total",
+            "beds_total",
+            "phc_total",
+            "private_pharmacies",
+            "hospitals_per_100k",
+            "beds_per_1000",
+            "phc_per_10k",
+            "government_coverage_pct",
+            "private_insurance_pct",
+            "self_pay_pct",
+            "adult_visit_rate",
+            "doctor_time_satisfaction_pct",
+            "adult_dental_consultation_pct",
+            "internet_health_info_pct",
+            "teleconsultation_pct",
+            "emr_access_pct",
+            "phc_2020",
+            "opd_2020",
+            "phc_2021",
+            "opd_2021",
+            "phc_2022",
+            "opd_2022",
+            "phc_2023",
+            "opd_2023",
+            "phc_2024",
+            "opd_2024",
+            "diabetic_visits_total",
+            "diabetic_visits_per_100k",
+            "community_pulse_index",
+            "risk_prediction_score",
+            "avg_waiting_time_minutes",
+            "chronic_cases_rate",
+        ],
+    )
+    tables["official_region_summary"] = official_region_summary
+
+    qassim_governorates = tables.get("qassim_governorates", pd.DataFrame())
+    qassim_governorates = _coerce_numeric(
+        qassim_governorates,
+        [
+            "population_total",
+            "female_total",
+            "male_total",
+            "non_saudi_total",
+            "non_saudi_female",
+            "non_saudi_male",
+            "saudi_total",
+            "saudi_female",
+            "saudi_male",
+        ],
+    )
+    tables["qassim_governorates"] = qassim_governorates
+
+    asir_clusters = tables.get("asir_clusters", pd.DataFrame())
+    asir_clusters = _coerce_numeric(
+        asir_clusters,
+        [
+            "phc_count",
+            "hospital_count",
+            "diabetes_centers",
+            "dialysis_units",
+            "dental_centers",
+            "rehabilitation_centers",
+            "smoking_cessation_clinics",
+            "beds_total",
+            "internal_beds",
+            "surgical_beds",
+            "icu_beds",
+            "diabetic_clinic_visits_2024",
+        ],
+    )
+    tables["asir_clusters"] = asir_clusters
+
+    workforce_regional = tables.get("workforce_regional", pd.DataFrame())
+    workforce_regional = _coerce_numeric(
+        workforce_regional,
+        [
+            "physicians_total_moh",
+            "physicians_and_dentists_total_moh",
+            "nurses_and_midwives_total_moh",
+            "pharmacists_total_moh",
+            "physicians_total_all_sectors",
+            "physicians_and_dentists_total_all_sectors",
+            "nurses_and_midwives_total_all_sectors",
+            "pharmacists_total_all_sectors",
+        ],
+    )
+    tables["workforce_regional"] = workforce_regional
+
     targets = tables.get("targets_benchmarks", pd.DataFrame())
     targets = _coerce_numeric(targets, ["target_value", "current_value"])
     tables["targets_benchmarks"] = targets
@@ -92,6 +207,7 @@ def prepare_dashboard_data(data_bundle: dict) -> dict:
         "tables": tables,
         "available_sheets": data_bundle.get("available_sheets", []),
         "loaded_at": data_bundle.get("loaded_at"),
+        "source_label": data_bundle.get("source_label", "Unknown Source"),
     }
 
 
@@ -111,9 +227,8 @@ def get_filter_options(cleaned_data: dict) -> dict:
     genders = sorted({value for value in survey.get("gender", pd.Series(dtype="object")).dropna().astype(str) if value.strip()})
 
     date_series = pd.Series(dtype="datetime64[ns]")
-    for column in ["response_date"]:
-        if column in survey.columns:
-            date_series = pd.concat([date_series, survey[column]], ignore_index=True)
+    if "response_date" in survey.columns:
+        date_series = pd.concat([date_series, survey["response_date"]], ignore_index=True)
     if "period_month" in monthly.columns:
         date_series = pd.concat([date_series, monthly["period_month"]], ignore_index=True)
 
@@ -140,13 +255,17 @@ def apply_filters(
 
     regions = tables.get("clean_regions_master", pd.DataFrame())
     survey = tables.get("survey_responses_simulated", pd.DataFrame())
-    monthly = tables.get("monthly_kpi_summary", pd.DataFrame())
-    complaints = tables.get("complaints_feedback", pd.DataFrame())
-    initiatives = tables.get("initiatives_programs", pd.DataFrame())
-    facilities = tables.get("health_facilities", pd.DataFrame())
+    known_provinces = set()
+    if "province_name_ar" in regions.columns:
+        known_provinces.update(regions["province_name_ar"].dropna().astype(str))
+    if "province_ar" in survey.columns:
+        known_provinces.update(survey["province_ar"].dropna().astype(str))
+    known_genders = set(survey.get("gender", pd.Series(dtype="object")).dropna().astype(str))
+    is_all_province = not _is_known_value(province, known_provinces)
+    is_all_gender = not _is_known_value(gender, known_genders)
 
     selected_region_ids = None
-    if province and province != "الكل":
+    if province and not is_all_province:
         region_candidates = set()
         if "province_name_ar" in regions.columns and "region_id" in regions.columns:
             region_candidates.update(regions.loc[regions["province_name_ar"] == province, "region_id"].astype(str))
@@ -155,15 +274,14 @@ def apply_filters(
         selected_region_ids = {value for value in region_candidates if value}
 
     if not survey.empty:
-        if province and province != "الكل" and "province_ar" in survey.columns:
+        if province and not is_all_province and "province_ar" in survey.columns:
             survey = survey[survey["province_ar"] == province]
-        if gender and gender != "الكل" and "gender" in survey.columns:
+        if gender and not is_all_gender and "gender" in survey.columns:
             survey = survey[survey["gender"] == gender]
         if start_date and "response_date" in survey.columns:
             survey = survey[survey["response_date"] >= pd.to_datetime(start_date)]
         if end_date and "response_date" in survey.columns:
             survey = survey[survey["response_date"] <= pd.to_datetime(end_date)]
-
     tables["survey_responses_simulated"] = survey
 
     for table_name, date_column in [
@@ -180,18 +298,45 @@ def apply_filters(
             frame = frame[frame[date_column] <= pd.to_datetime(end_date)]
         tables[table_name] = frame
 
-    for table_name in ["initiatives_programs", "health_facilities", "clean_regions_master"]:
+    for table_name in [
+        "initiatives_programs",
+        "health_facilities",
+        "clean_regions_master",
+        "regions_master",
+        "official_region_summary",
+    ]:
         frame = tables.get(table_name, pd.DataFrame())
         if selected_region_ids and "region_id" in frame.columns:
             frame = frame[frame["region_id"].astype(str).isin(selected_region_ids)]
-        elif province and province != "الكل":
+        elif province and not is_all_province:
             province_column = "province_ar" if "province_ar" in frame.columns else "province_name_ar"
             if province_column in frame.columns:
                 frame = frame[frame[province_column] == province]
         tables[table_name] = frame
 
+    if selected_region_ids == {"R-04"}:
+        tables["qassim_governorates"] = tables.get("qassim_governorates", pd.DataFrame()).copy()
+    elif not is_all_province:
+        tables["qassim_governorates"] = pd.DataFrame()
+
+    if selected_region_ids == {"R-06"}:
+        tables["asir_clusters"] = tables.get("asir_clusters", pd.DataFrame()).copy()
+    elif not is_all_province:
+        tables["asir_clusters"] = pd.DataFrame()
+
+    workforce = tables.get("workforce_regional", pd.DataFrame())
+    if is_all_province:
+        tables["workforce_regional"] = workforce.copy()
+    elif selected_region_ids == {"R-06"} and not workforce.empty and "region_key" in workforce.columns:
+        tables["workforce_regional"] = workforce[workforce["region_key"].isin(["asir_core", "asir_bishah"])].copy()
+    elif selected_region_ids == {"R-04"} and not workforce.empty and "region_key" in workforce.columns:
+        tables["workforce_regional"] = workforce[workforce["region_key"] == "qassim"].copy()
+    else:
+        tables["workforce_regional"] = pd.DataFrame()
+
     return {
         "tables": tables,
         "available_sheets": cleaned_data.get("available_sheets", []),
         "loaded_at": cleaned_data.get("loaded_at"),
+        "source_label": cleaned_data.get("source_label", "Unknown Source"),
     }

@@ -1,0 +1,6 @@
+﻿artifact_name,source_type,source_files,primary_focus,notes
+official_region_summary_2024.csv,رسمي مباشر + مشتق حسابياً,moh_statistical_yearbook_2024.xlsx; gastat_healthcare_establishments_workforce_2024_en.xlsx; gastat_healthcare_statistics_publication_2024_en.xlsx,السعودية كاملة مع التركيز على عسير والقصيم,يجمع البنية الصحية والوصول والرضا واستغلال الخدمة، ثم يضيف مؤشرات مركبة مشتقة
+qassim_governorate_population_detail.csv,رسمي مباشر,gastat_qassim_detailed_results.pdf,تفصيل محافظات القصيم,سكان القصيم حسب المحافظة والجنس والجنسية
+asir_cluster_detail_2024.csv,رسمي مباشر,moh_statistical_yearbook_2024.xlsx,تفصيل عسير الداخلي,مقارنة تجمع عسير وتجمع بيشة في المرافق والأسرة وزيارات عيادات السكري
+asir_qassim_workforce_2024.csv,رسمي مباشر,moh_statistical_yearbook_2024.xlsx,القوى العاملة لعسير والقصيم,يشمل أطباء وتمريض وصيادلة وفئات مساعدة في وزارة الصحة وكافة القطاعات
+official_google_sheets_seed.xlsx,رسمي مباشر + مشتق حسابياً,جميع الملفات أعلاه,تغذية التطبيق ورفعها إلى Google Sheets,بعض الجداول داخل Seed تمثيلية لكنها معايرة على الأساس الرسمي الإقليمي

@@ -1,62 +1,98 @@
-
 from __future__ import annotations
-from dotenv import load_dotenv
-load_dotenv()
+
 import pandas as pd
 import plotly.express as px
 
 from src.charts import apply_dashboard_theme, build_empty_figure
 from src.config import COLORS
+from src.official_analytics import get_region_summary
+
+SAUDI_CENTER = {"lat": 23.8859, "lon": 45.0792}
+ASIR_CENTER = {"lat": 18.2164, "lon": 42.5053}
+QASSIM_CENTER = {"lat": 26.3303, "lon": 43.9743}
+RISK_COLOR_MAP = {
+    "عالي": COLORS["danger"],
+    "مرتفع": COLORS["danger"],
+    "متوسط": COLORS["warning"],
+    "منخفض": COLORS["success"],
+}
+
+
+def build_map_dataset(filtered_data: dict) -> pd.DataFrame:
+    summary = get_region_summary(filtered_data)
+    if summary.empty:
+        return pd.DataFrame()
+
+    frame = summary.copy()
+    frame["province_name_ar"] = frame["province_name_ar"].fillna(frame["region_name_ar"])
+    frame["city_name_ar"] = frame["city_name_ar"].fillna(frame["province_name_ar"])
+    frame["risk_level"] = frame["risk_level"].fillna(frame["priority_level"]).fillna("منخفض")
+    frame["marker_size"] = (
+        pd.to_numeric(frame["population_total"], errors="coerce").fillna(0).pow(0.4) * 0.9
+    ).clip(lower=14, upper=32)
+    return frame
+
+
+def _resolve_map_view(map_frame: pd.DataFrame) -> tuple[dict[str, float], float]:
+    if map_frame.empty:
+        return SAUDI_CENTER, 4.0
+
+    provinces = set(map_frame.get("province_name_ar", pd.Series(dtype="object")).dropna().astype(str))
+    if provinces == {"عسير"}:
+        return ASIR_CENTER, 6.0
+    if provinces == {"القصيم"}:
+        return QASSIM_CENTER, 6.0
+    if len(map_frame) <= 3:
+        return {
+            "lat": pd.to_numeric(map_frame["latitude"], errors="coerce").mean(),
+            "lon": pd.to_numeric(map_frame["longitude"], errors="coerce").mean(),
+        }, 5.0
+    return SAUDI_CENTER, 4.2
 
 
 def build_regions_map(filtered_data: dict):
-    regions = filtered_data["tables"].get("clean_regions_master", pd.DataFrame())
-    survey = filtered_data["tables"].get("survey_responses_simulated", pd.DataFrame())
+    map_frame = build_map_dataset(filtered_data)
+    if map_frame.empty:
+        return build_empty_figure("بيانات الخريطة الرسمية غير متاحة حالياً.")
 
-    if regions.empty or not {"region_id", "province_name_ar", "latitude", "longitude"}.issubset(regions.columns):
-        return build_empty_figure("بيانات الإحداثيات غير مكتملة لعرض الخريطة.")
-
-    map_frame = regions.copy()
-
-    if not survey.empty and {"region_id", "community_pulse_index", "response_id"}.issubset(survey.columns):
-        survey_summary = (
-            survey.groupby("region_id", dropna=True)
-            .agg(
-                avg_pulse=("community_pulse_index", "mean"),
-                responses=("response_id", "nunique"),
-            )
-            .reset_index()
-        )
-        map_frame = map_frame.merge(survey_summary, on="region_id", how="left")
-    else:
-        map_frame["avg_pulse"] = None
-        map_frame["responses"] = None
-
-    figure_kwargs = {
-        "data_frame": map_frame,
-        "lat": "latitude",
-        "lon": "longitude",
-        "hover_name": "province_name_ar",
-        "hover_data": {
-            "region_id": True,
-            "avg_pulse": ":.1f",
-            "responses": True,
-            "latitude": False,
-            "longitude": False,
-        },
-        "zoom": 6,
-        "height": 460,
-    }
-    if map_frame["responses"].notna().any():
-        figure_kwargs["size"] = "responses"
-    if map_frame["avg_pulse"].notna().any():
-        figure_kwargs["color"] = "avg_pulse"
-        figure_kwargs["color_continuous_scale"] = [COLORS["teal"], COLORS["navy_soft"]]
-
-    fig = px.scatter_mapbox(**figure_kwargs)
-    fig.update_layout(
-        mapbox_style="carto-darkmatter",
-        mapbox_center={"lat": map_frame["latitude"].mean(), "lon": map_frame["longitude"].mean()},
-        coloraxis_showscale=False,
+    center, zoom = _resolve_map_view(map_frame)
+    fig = px.scatter_mapbox(
+        map_frame,
+        lat="latitude",
+        lon="longitude",
+        color="risk_level",
+        size="marker_size",
+        size_max=28,
+        color_discrete_map=RISK_COLOR_MAP,
+        hover_name="province_name_ar",
+        custom_data=[
+            "province_name_ar",
+            "city_name_ar",
+            "community_pulse_index",
+            "doctor_time_satisfaction_pct",
+            "hospitals_total",
+            "risk_level",
+        ],
+        zoom=zoom,
+        center=center,
+        opacity=0.92,
     )
-    return apply_dashboard_theme(fig, "الخريطة التفاعلية للمناطق والمحافظات")
+    fig.update_traces(
+        marker={"opacity": 0.94},
+        hovertemplate=(
+            "المحافظة: %{customdata[0]}<br>"
+            "المدينة: %{customdata[1]}<br>"
+            "مؤشر الجاهزية المركب: %{customdata[2]:.1f}<br>"
+            "رضا وقت الطبيب: %{customdata[3]:.1f}%<br>"
+            "عدد المستشفيات: %{customdata[4]:,.0f}<br>"
+            "مستوى الأولوية: %{customdata[5]}<extra></extra>"
+        ),
+    )
+    fig.update_layout(
+        mapbox_style="carto-positron",
+        mapbox_center=center,
+        mapbox_zoom=zoom,
+        legend_title_text="مستوى الأولوية",
+        margin={"l": 8, "r": 8, "t": 8, "b": 8},
+    )
+    return apply_dashboard_theme(fig)

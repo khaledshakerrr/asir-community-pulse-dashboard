@@ -1,0 +1,7 @@
+﻿sheet_name,column_name,data_type,description_ar,description_en
+regions_master,population_total,Integer,عدد السكان المشتق من الجداول الرسمية لعام 2024,Official 2024 population derived from official healthcare rate tables
+health_facilities,facility_count,Integer,إجمالي المنشآت أو السعات الصحية الرسمية المرتبطة بالسجل,Official facility count attached to the record
+monthly_kpi_summary,community_pulse_index,Float,مؤشر مركب مشتق من الرضا والوصول والقدرة الصحية الإقليمية,"Derived composite from access, satisfaction, and regional health capacity"
+survey_responses_simulated,risk_prediction_score,Float,مخاطر مزمنة مشتقة من مؤشرات رسمية مع توزيع تمثيلي على مستوى السجل,Chronic risk score modeled from official indicators with representative row-level distribution
+forecasting_data,forecast,Float,توقع للطلب الصحي السنوي المركب لعسير والقصيم,Forecast for combined annual health demand in Asir and Qassim
+data_dictionary,description_ar,Text,شرح الحقل بالعربية,Arabic field description

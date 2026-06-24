@@ -1,0 +1,5 @@
+﻿kpi_id,kpi_name_ar,kpi_name_en,target_value,current_value,measurement_unit,vision_2030_alignment
+KPI-01,مؤشر نبض المجتمع,Community Pulse Index,85,71.9,Index,تحسين جودة الحياة
+KPI-02,نسبة الرضا,Satisfaction Rate,88,81.8,Percentage,رفع رضا المستفيد
+KPI-03,متوسط وقت الانتظار,Average Waiting Time,18,21.8,Minutes,كفاءة الخدمة الصحية
+KPI-04,المناطق عالية الخطورة,High Risk Areas,2,0.0,Count,الوقاية المبكرة

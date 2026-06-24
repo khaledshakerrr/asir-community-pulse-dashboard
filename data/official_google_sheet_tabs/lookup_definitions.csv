@@ -1,0 +1,8 @@
+﻿field_name,allowed_value,value_description_ar,value_description_en
+initiative_status,مستمرة,المبادرة قيد التنفيذ,Ongoing
+initiative_status,مجدولة,المبادرة في مرحلة التحضير,Scheduled
+risk_level,عالي,مستوى خطورة مرتفع,High risk
+risk_level,متوسط,مستوى خطورة متوسط,Medium risk
+risk_level,منخفض,مستوى خطورة منخفض,Low risk
+source_type,رسمي مباشر,بيانات من جداول حكومية منشورة,Direct official data
+source_type,مشتق حسابياً,مؤشر مركب أو توزيع مولد من البيانات الرسمية,Derived from official data

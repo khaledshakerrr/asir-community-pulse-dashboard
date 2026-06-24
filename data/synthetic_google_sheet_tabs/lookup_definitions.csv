@@ -1,0 +1,7 @@
+﻿field_name,allowed_value,value_description_ar,value_description_en
+initiative_status,مستمرة,المبادرة قيد التنفيذ حالياً,Ongoing
+initiative_status,مكتملة,تم تنفيذ المبادرة وإغلاقها,Completed
+initiative_status,مجدولة,مبادرة مجدولة للإطلاق,Scheduled
+risk_level,عالي,مستوى خطر مرتفع,High risk
+risk_level,متوسط,مستوى خطر متوسط,Medium risk
+risk_level,منخفض,مستوى خطر منخفض,Low risk

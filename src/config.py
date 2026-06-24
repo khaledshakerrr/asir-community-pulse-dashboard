@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import os
@@ -9,11 +8,13 @@ from flask_caching import Cache
 load_dotenv()
 
 APP_TITLE = "منصة نبض المجتمع"
-APP_SUBTITLE = "Asir Community Pulse Platform"
+APP_SUBTITLE = "منصة تحليلية تنفيذية للمؤشرات الصحية داخل المملكة"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "").strip()
 GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
 GOOGLE_SERVICE_ACCOUNT_JSON_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_FILE", "").strip()
+LOCAL_DATA_WORKBOOK = os.getenv("LOCAL_DATA_WORKBOOK", "data/official_google_sheets_seed.xlsx").strip()
+PREFER_LOCAL_DEMO_DATA = os.getenv("PREFER_LOCAL_DEMO_DATA", "1").strip() == "1"
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
@@ -22,6 +23,7 @@ SCOPES = [
 
 CACHE_TIMEOUT_SECONDS = int(os.getenv("CACHE_TIMEOUT_SECONDS", "300"))
 HIGH_RISK_THRESHOLD = float(os.getenv("HIGH_RISK_THRESHOLD", "75"))
+FONT_FAMILY = "Cairo, Tajawal, 'Segoe UI', sans-serif"
 
 EXPECTED_SHEETS = [
     "clean_regions_master",
@@ -35,6 +37,11 @@ EXPECTED_SHEETS = [
     "targets_benchmarks",
     "lookup_definitions",
     "data_dictionary",
+    "official_region_summary",
+    "qassim_governorates",
+    "asir_clusters",
+    "workforce_regional",
+    "source_catalog",
 ]
 
 REQUIRED_SHEETS = {
@@ -112,22 +119,56 @@ EXPECTED_COLUMNS = {
         "target_value",
         "current_value",
     ],
+    "official_region_summary": [
+        "region_id",
+        "province_name_ar",
+        "population_total",
+        "community_pulse_index",
+        "risk_prediction_score",
+    ],
+    "qassim_governorates": [
+        "governorate_ar",
+        "population_total",
+        "saudi_total",
+        "non_saudi_total",
+    ],
+    "asir_clusters": [
+        "cluster_name_ar",
+        "phc_count",
+        "hospital_count",
+        "beds_total",
+    ],
+    "workforce_regional": [
+        "region_key",
+        "region_name_ar",
+        "physicians_total_all_sectors",
+        "nurses_and_midwives_total_all_sectors",
+    ],
 }
 
 COLORS = {
-    "navy": "#071C2B",
-    "navy_soft": "#0B2B3D",
-    "navy_card": "#10384D",
-    "teal": "#13C5C2",
-    "cyan": "#43E6F4",
+    "bg_main": "#071A2C",
+    "bg_panel": "#0B243D",
+    "card_bg": "#FFFFFF",
+    "card_soft": "#F5F9FC",
+    "accent_teal": "#00A88F",
+    "accent_cyan": "#28D6C4",
+    "text_dark": "#102A43",
+    "text_muted": "#6B7280",
+    "danger": "#E74C3C",
+    "warning": "#F2B84B",
+    "success": "#00A88F",
+    "border": "#D9E2EC",
+    "grid": "rgba(16,42,67,0.08)",
     "white": "#FFFFFF",
-    "paper": "#F5F8FB",
-    "ink": "#112533",
-    "muted": "#6B7B88",
-    "border": "#DCE6EE",
-    "danger": "#E0565B",
-    "warning": "#F5B642",
-    "success": "#19A974",
+    "paper": "#F5F9FC",
+    "ink": "#102A43",
+    "muted": "#6B7280",
+    "teal": "#00A88F",
+    "cyan": "#28D6C4",
+    "navy": "#071A2C",
+    "navy_soft": "#0B243D",
+    "navy_card": "#12324F",
 }
 
 cache = Cache()

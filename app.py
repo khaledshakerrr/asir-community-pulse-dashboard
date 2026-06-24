@@ -2,25 +2,21 @@ from __future__ import annotations
 
 from dotenv import load_dotenv
 
-# Load .env before importing any project modules from src/.
+# Load environment variables before importing project modules.
 load_dotenv()
 
 import base64
 import secrets
 from datetime import datetime
 
-from flask import Response, request
 import dash
-from dash import Dash, Input, Output, State, ctx, dcc, html, page_container
 import dash_bootstrap_components as dbc
+from dash import Dash, Input, Output, State, ctx, dcc, html, page_container
+from flask import Response, request
 
 from src.config import APP_PASSWORD, APP_SUBTITLE, APP_TITLE, init_cache
 from src.data_cleaning import get_filter_options, prepare_dashboard_data
-from src.google_sheets import (
-    GoogleSheetsConnectionError,
-    clear_dashboard_cache,
-    load_dashboard_datasets,
-)
+from src.google_sheets import GoogleSheetsConnectionError, clear_dashboard_cache, load_dashboard_datasets
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
@@ -106,7 +102,7 @@ app.layout = html.Div(
         dcc.Interval(id="data-refresh-interval", interval=300000, n_intervals=0),
         html.Div(
             [
-                html.Div(
+                html.Aside(
                     [
                         html.Div(
                             [
@@ -120,6 +116,13 @@ app.layout = html.Div(
                                 ),
                             ],
                             className="brand-block",
+                        ),
+                        html.Div(
+                            [
+                                html.Div("التنقل", className="sidebar-section-title"),
+                                dbc.Nav(_build_nav_links(), vertical=True, pills=True, class_name="sidebar-nav"),
+                            ],
+                            className="sidebar-panel sidebar-nav-panel",
                         ),
                         html.Div(
                             [
@@ -140,7 +143,7 @@ app.layout = html.Div(
                                     clearable=False,
                                     className="filter-dropdown",
                                 ),
-                                html.Label("النطاق الزمني", className="filter-label"),
+                                html.Label("الفترة الزمنية", className="filter-label"),
                                 dcc.DatePickerRange(
                                     id="date-range-filter",
                                     start_date_placeholder_text="من",
@@ -149,37 +152,53 @@ app.layout = html.Div(
                                     className="date-picker",
                                 ),
                                 html.Button("تحديث البيانات", id="refresh-data-button", className="refresh-button"),
-                                html.Div(id="connection-status", className="status-chip"),
                             ],
                             className="sidebar-panel",
                         ),
                         html.Div(
                             [
-                                html.Div("التنقل", className="sidebar-section-title"),
-                                dbc.Nav(_build_nav_links(), vertical=True, pills=True, class_name="sidebar-nav"),
+                                html.Div("مصدر البيانات", className="sidebar-section-title"),
+                                html.Div("منصة بيانات تشغيلية موحدة", className="sidebar-note-title"),
+                                html.P(
+                                    "تعتمد المنصة على طبقة بيانات تشغيلية موحدة قابلة للتحديث الدوري، بما يدعم العروض التنفيذية والتحليلات القطاعية دون إظهار تفاصيل تقنية للمستخدم النهائي.",
+                                    className="sidebar-note-text",
+                                ),
                             ],
-                            className="sidebar-panel sidebar-nav-panel",
+                            className="sidebar-panel sidebar-note-panel",
                         ),
                     ],
                     className="sidebar",
                 ),
-                html.Div(
+                html.Main(
                     [
                         html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.H2("لوحة تنفيذية لمؤشرات المجتمع", className="page-heading"),
+                                        html.Div("منصة تحليلية عربية", className="hero-eyebrow"),
+                                        html.H2("لوحة تنفيذية لمشروع نبض المجتمع", className="hero-title"),
                                         html.P(
-                                            "منصة عربية تفاعلية تربط مؤشرات نبض المجتمع ببيانات Google Sheets مع تحديث مؤقت كل 5 دقائق.",
-                                            className="page-subheading",
+                                            "منصة عربية تفاعلية توحد المؤشرات الصحية والاجتماعية، والتحليلات المكانية، والاتجاهات الزمنية، والتوقعات التشغيلية لدعم القرار داخل المملكة العربية السعودية.",
+                                            className="hero-subtitle",
                                         ),
-                                    ]
+                                    ],
+                                    className="hero-copy",
+                                ),
+                                html.Div(
+                                    [
+                                        html.Div(id="hero-source-pill", className="hero-pill"),
+                                        html.Div(id="connection-status", className="hero-status"),
+                                    ],
+                                    className="hero-meta",
                                 ),
                             ],
-                            className="content-header",
+                            className="hero-card",
                         ),
                         html.Div(page_container, className="page-content"),
+                        html.Footer(
+                            "منصة تحليلية تنفيذية تدعم القرار الصحي عبر مؤشرات موحدة ورؤى مكانية واتجاهات مستقبلية",
+                            className="footer-note",
+                        ),
                     ],
                     className="content-shell",
                 ),
@@ -199,6 +218,7 @@ app.layout = html.Div(
     Output("date-range-filter", "max_date_allowed"),
     Output("date-range-filter", "start_date"),
     Output("date-range-filter", "end_date"),
+    Output("hero-source-pill", "children"),
     Output("connection-status", "children"),
     Input("data-refresh-interval", "n_intervals"),
     Input("refresh-data-button", "n_clicks"),
@@ -218,7 +238,7 @@ def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender,
     except GoogleSheetsConnectionError as exc:
         today = datetime.utcnow().date().isoformat()
         fallback = [{"label": "الكل", "value": "الكل"}]
-        return fallback, "الكل", fallback, "الكل", today, today, today, today, str(exc)
+        return fallback, "الكل", fallback, "الكل", today, today, today, today, "المصدر غير متاح", str(exc)
 
     province_options = [{"label": "الكل", "value": "الكل"}] + [
         {"label": province, "value": province} for province in options["provinces"]
@@ -229,6 +249,7 @@ def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender,
 
     min_date = options["min_date"].date().isoformat() if options["min_date"] is not None else None
     max_date = options["max_date"].date().isoformat() if options["max_date"] is not None else None
+
     province_values = {item["value"] for item in province_options}
     gender_values = {item["value"] for item in gender_options}
     selected_province = current_province if current_province in province_values else "الكل"
@@ -243,7 +264,14 @@ def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender,
     selected_end = current_end or max_date
 
     loaded_at = datetime.fromisoformat(cleaned["loaded_at"]).strftime("%Y-%m-%d %H:%M")
-    status = f"آخر مزامنة ناجحة: {loaded_at} UTC"
+    source_label = cleaned.get("source_label", "Unknown Source")
+    if "Official" in source_label:
+        source_chip = "جاهزية تنفيذية"
+    elif "Synthetic" in source_label:
+        source_chip = "وضع تطوير"
+    else:
+        source_chip = "تشغيل مباشر"
+    status = f"آخر تحديث ناجح: {loaded_at} UTC"
 
     return (
         province_options,
@@ -254,6 +282,7 @@ def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender,
         max_date,
         selected_start,
         selected_end,
+        source_chip,
         status,
     )
 
