@@ -18,7 +18,7 @@ def layout():
             page_header(
                 "القوى العاملة والطاقة الاستيعابية",
                 "رؤية تنفيذية لهيكل الكوادر الصحية ومزيج الخدمة في عسير والقصيم، مع إبراز أين تقود وزارة الصحة وأين يعتمد المشهد على بقية القطاعات.",
-                eyebrow="Workforce & Capacity",
+                eyebrow="القوى العاملة والطاقة",
             ),
             html.Div(id="workforce-alert", className="message-stack"),
             html.Div(

@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from src.charts import apply_dashboard_theme, build_empty_figure
+from src.charts import apply_dashboard_theme, apply_horizontal_bar_layout, build_empty_figure
 from src.config import COLORS
 from src.official_analytics import (
     build_utilization_long,
@@ -108,7 +108,7 @@ def build_qassim_population_chart(filtered_data: dict) -> go.Figure:
     fig.update_layout(showlegend=False)
     fig.update_yaxes(title=None)
     fig.update_traces(hovertemplate="المحافظة: %{y}<br>السكان: %{x:,.0f}<extra></extra>")
-    return apply_dashboard_theme(fig)
+    return apply_horizontal_bar_layout(apply_dashboard_theme(fig), left_margin=150)
 
 
 def build_asir_cluster_capacity_chart(filtered_data: dict) -> go.Figure:
@@ -249,7 +249,7 @@ def build_regional_ranking_chart(filtered_data: dict) -> go.Figure:
     fig.update_traces(
         hovertemplate="المنطقة: %{y}<br>المؤشر المركب: %{x:.1f}<br>ضغط المخاطر: %{marker.color:.1f}<extra></extra>"
     )
-    return apply_dashboard_theme(fig)
+    return apply_horizontal_bar_layout(apply_dashboard_theme(fig), left_margin=205)
 
 
 def build_service_mix_chart(filtered_data: dict) -> go.Figure:

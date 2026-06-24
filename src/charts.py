@@ -64,6 +64,21 @@ def apply_dashboard_theme(fig: go.Figure) -> go.Figure:
     return fig
 
 
+def apply_horizontal_bar_layout(fig: go.Figure, left_margin: int = 135) -> go.Figure:
+    current_margin = fig.layout.margin.to_plotly_json() if fig.layout.margin else {}
+    current_margin.update(
+        {
+            "l": max(left_margin, current_margin.get("l", 0)),
+            "r": max(28, current_margin.get("r", 0)),
+            "b": max(40, current_margin.get("b", 0)),
+        }
+    )
+    fig.update_layout(margin=current_margin)
+    fig.update_yaxes(automargin=True, title=None, tickfont={"size": 13, "color": COLORS["text_dark"]})
+    fig.update_xaxes(automargin=True)
+    return fig
+
+
 def build_pulse_by_province_bar(filtered_data: dict) -> go.Figure:
     survey = filtered_data["tables"].get("survey_responses_simulated", pd.DataFrame())
     if survey.empty or "province_ar" not in survey.columns or "community_pulse_index" not in survey.columns:
@@ -256,7 +271,7 @@ def build_initiatives_progress_chart(filtered_data: dict) -> go.Figure:
     )
     fig.update_coloraxes(showscale=False)
     fig.update_traces(hovertemplate="المبادرة: %{y}<br>نسبة الإنجاز: %{x:.0f}%<extra></extra>")
-    return apply_dashboard_theme(fig)
+    return apply_horizontal_bar_layout(apply_dashboard_theme(fig), left_margin=165)
 
 
 def build_initiatives_status_chart(filtered_data: dict) -> go.Figure:
@@ -389,4 +404,4 @@ def build_high_risk_regions_chart(filtered_data: dict) -> go.Figure:
     )
     fig.update_coloraxes(showscale=False)
     fig.update_traces(hovertemplate="المنطقة: %{y}<br>متوسط المخاطر: %{x:.1f}<extra></extra>")
-    return apply_dashboard_theme(fig)
+    return apply_horizontal_bar_layout(apply_dashboard_theme(fig), left_margin=170)

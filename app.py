@@ -8,14 +8,16 @@ load_dotenv()
 import base64
 import secrets
 from datetime import datetime
+from pathlib import Path
 
 import dash
 import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, State, ctx, dcc, html, page_container
-from flask import Response, request
+from flask import Response, request, send_file
 
 from src.config import APP_PASSWORD, APP_SUBTITLE, APP_TITLE, init_cache
 from src.data_cleaning import get_filter_options, prepare_dashboard_data
+from src.environmental_live import clear_environmental_cache
 from src.google_sheets import GoogleSheetsConnectionError, clear_dashboard_cache, load_dashboard_datasets
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -30,6 +32,8 @@ app = Dash(
 )
 server = app.server
 init_cache(server)
+
+DOCUMENTATION_PDF_PATH = Path(__file__).resolve().parent / "docs" / "asir_community_pulse_documentation_ar.pdf"
 
 app.index_string = """
 <!DOCTYPE html>
@@ -75,10 +79,17 @@ def protect_dashboard():
         return None
 
     return Response(
-        "Authentication required.",
+        "يتطلب هذا التطبيق كلمة مرور للوصول.",
         401,
         {"WWW-Authenticate": 'Basic realm="Asir Community Pulse Dashboard"'},
     )
+
+
+@server.route("/documentation/pdf")
+def download_documentation_pdf():
+    if not DOCUMENTATION_PDF_PATH.is_file():
+        return Response("ملف التوثيق PDF غير متاح حاليًا. قم بتوليده أولًا من المجلد docs.", status=404, mimetype="text/plain; charset=utf-8")
+    return send_file(DOCUMENTATION_PDF_PATH, as_attachment=True, download_name="asir_community_pulse_documentation_ar.pdf")
 
 
 def _build_nav_links():
@@ -176,9 +187,9 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.Div("منصة تحليلية عربية", className="hero-eyebrow"),
-                                        html.H2("لوحة تنفيذية لمشروع نبض المجتمع", className="hero-title"),
+                                        html.H2("لوحة تنفيذية لمؤشرات نبض المجتمع", className="hero-title"),
                                         html.P(
-                                            "منصة عربية تفاعلية توحد المؤشرات الصحية والاجتماعية، والتحليلات المكانية، والاتجاهات الزمنية، والتوقعات التشغيلية لدعم القرار داخل المملكة العربية السعودية.",
+                                            "منصة عربية تفاعلية توحد المؤشرات الصحية والاجتماعية، والتحليلات المكانية، والاتجاهات الزمنية، والتنبؤات التشغيلية لدعم القرار داخل المملكة العربية السعودية.",
                                             className="hero-subtitle",
                                         ),
                                     ],
@@ -230,6 +241,7 @@ app.layout = html.Div(
 def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender, current_start, current_end):
     if ctx.triggered_id == "refresh-data-button" and refresh_clicks:
         clear_dashboard_cache()
+        clear_environmental_cache()
 
     try:
         datasets = load_dashboard_datasets()
@@ -264,14 +276,16 @@ def refresh_sidebar_filters(_, refresh_clicks, current_province, current_gender,
     selected_end = current_end or max_date
 
     loaded_at = datetime.fromisoformat(cleaned["loaded_at"]).strftime("%Y-%m-%d %H:%M")
-    source_label = cleaned.get("source_label", "Unknown Source")
-    if "Official" in source_label:
-        source_chip = "جاهزية تنفيذية"
-    elif "Synthetic" in source_label:
-        source_chip = "وضع تطوير"
+    source_label = cleaned.get("source_label", "مصدر غير محدد")
+    if "رسمي" in source_label:
+        source_chip = "بيانات رسمية"
+    elif "تجريبي" in source_label:
+        source_chip = "بيانات تجريبية"
+    elif "جوجل شيت" in source_label:
+        source_chip = "ربط تشغيلي مباشر"
     else:
-        source_chip = "تشغيل مباشر"
-    status = f"آخر تحديث ناجح: {loaded_at} UTC"
+        source_chip = "مصدر تشغيلي"
+    status = f"آخر تحديث ناجح: {loaded_at} بتوقيت غرينتش"
 
     return (
         province_options,

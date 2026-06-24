@@ -56,10 +56,10 @@ def _resolve_local_workbook_path() -> Path | None:
 def _infer_local_source_label(path: Path) -> str:
     name = path.stem.lower()
     if "official" in name:
-        return "Official Saudi Seed Workbook (Local)"
+        return "ملف بيانات رسمي محلي"
     if "synthetic" in name:
-        return "Synthetic Local Demo Workbook"
-    return "Local Workbook"
+        return "ملف بيانات تجريبي محلي"
+    return "ملف بيانات محلي"
 
 
 def _cache_is_ready() -> bool:
@@ -99,11 +99,11 @@ def _load_service_account_info(credential_mode: str, credential_value: str) -> d
 def _build_client(sheet_id: str, credential_mode: str, credential_value: str) -> gspread.Client:
     if not sheet_id:
         raise GoogleSheetsConnectionError(
-            "لم يتم ضبط GOOGLE_SHEET_ID. أضف معرّف ملف Google Sheets داخل ملف .env أو إعدادات النشر ثم أعد تشغيل التطبيق."
+            "لم يتم ضبط GOOGLE_SHEET_ID. أضف معرّف ملف جوجل شيت داخل ملف .env أو إعدادات النشر ثم أعد تشغيل التطبيق."
         )
     if credential_mode == "missing" or not credential_value:
         raise GoogleSheetsConnectionError(
-            "بيانات اعتماد Google Sheets غير متوفرة. استخدم GOOGLE_SERVICE_ACCOUNT_JSON للنشر أو GOOGLE_SERVICE_ACCOUNT_JSON_FILE للتشغيل المحلي."
+            "بيانات اعتماد جوجل شيت غير متوفرة. استخدم GOOGLE_SERVICE_ACCOUNT_JSON للنشر أو GOOGLE_SERVICE_ACCOUNT_JSON_FILE للتشغيل المحلي."
         )
 
     service_account_info = _load_service_account_info(credential_mode, credential_value)
@@ -112,7 +112,7 @@ def _build_client(sheet_id: str, credential_mode: str, credential_value: str) ->
         return gspread.authorize(credentials)
     except Exception as exc:
         raise GoogleSheetsConnectionError(
-            "فشل إنشاء اتصال Google Sheets. تحقق من صلاحيات حساب الخدمة ومشاركة الملف مع البريد الخاص بحساب الخدمة."
+            "فشل إنشاء اتصال جوجل شيت. تحقق من صلاحيات حساب الخدمة ومشاركة الملف مع البريد الخاص بحساب الخدمة."
         ) from exc
 
 
@@ -124,7 +124,7 @@ def _load_sheets_cached(sheet_id: str, credential_mode: str, credential_value: s
         workbook = client.open_by_key(sheet_id)
     except Exception as exc:
         raise GoogleSheetsConnectionError(
-            "تعذر فتح ملف Google Sheets. تحقق من GOOGLE_SHEET_ID ومشاركة الملف مع حساب الخدمة."
+            "تعذر فتح ملف جوجل شيت. تحقق من GOOGLE_SHEET_ID ومشاركة الملف مع حساب الخدمة."
         ) from exc
 
     tables: dict[str, pd.DataFrame] = {}
@@ -142,7 +142,7 @@ def _load_sheets_cached(sheet_id: str, credential_mode: str, credential_value: s
             tables[sheet_name] = pd.DataFrame()
             continue
         except Exception as exc:
-            raise GoogleSheetsConnectionError(f"تعذر قراءة الورقة '{sheet_name}' من Google Sheets.") from exc
+            raise GoogleSheetsConnectionError(f"تعذر قراءة الورقة '{sheet_name}' من جوجل شيت.") from exc
 
         tables[sheet_name] = pd.DataFrame(records)
 
@@ -150,7 +150,7 @@ def _load_sheets_cached(sheet_id: str, credential_mode: str, credential_value: s
         "tables": tables,
         "available_sheets": sorted(available_sheets),
         "loaded_at": datetime.now(timezone.utc).isoformat(),
-        "source_label": "Google Sheets",
+        "source_label": "جوجل شيت",
     }
 
 
@@ -203,11 +203,11 @@ def load_dashboard_datasets() -> dict:
 
     if not sheet_id:
         raise GoogleSheetsConnectionError(
-            "لم يتم ضبط GOOGLE_SHEET_ID، كما لا يوجد ملف بيانات محلي جاهز. أضف إعدادات Google Sheets أو استخدم ملف البيانات التجريبية."
+            "لم يتم ضبط GOOGLE_SHEET_ID، كما لا يوجد ملف بيانات محلي جاهز. أضف إعدادات جوجل شيت أو استخدم ملف البيانات التجريبية."
         )
 
     raise GoogleSheetsConnectionError(
-        "بيانات اعتماد Google Sheets غير متوفرة، ولا يوجد ملف بيانات محلي بديل. تحقق من .env أو أنشئ البيانات التجريبية."
+        "بيانات اعتماد جوجل شيت غير متوفرة، ولا يوجد ملف بيانات محلي بديل. تحقق من .env أو أنشئ البيانات التجريبية."
     )
 
 

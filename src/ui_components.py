@@ -33,7 +33,7 @@ def chart_card(
     graph_height: str = "360px",
     graph_config: dict | None = None,
 ):
-    merged_config = {"displayModeBar": False, "responsive": True}
+    merged_config = {"displayModeBar": False, "displaylogo": False, "responsive": True, "locale": "ar"}
     if graph_config:
         merged_config.update(graph_config)
 
@@ -98,4 +98,49 @@ def metric_list_card(title: str, subtitle: str, rows: list[dict], empty_message:
             html.Div(body, className="metric-list-card"),
         ],
         className="chart-card chart-card--compact",
+    )
+
+
+def data_table_card(
+    title: str,
+    subtitle: str,
+    columns: list[str],
+    rows: list[dict],
+    empty_message: str = "لا توجد سجلات متاحة حالياً.",
+    column_labels: dict[str, str] | None = None,
+):
+    labels = column_labels or {}
+    body = (
+        html.Div(empty_message, className="metric-list-empty")
+        if not rows
+        else html.Div(
+            [
+                html.Div(
+                    [html.Div(labels.get(column, column), className="data-table-cell data-table-cell--head") for column in columns],
+                    className="data-table-row data-table-row--head",
+                ),
+                *[
+                    html.Div(
+                        [html.Div(row.get(column, ""), className="data-table-cell") for column in columns],
+                        className="data-table-row",
+                    )
+                    for row in rows
+                ],
+            ],
+            className="data-table",
+        )
+    )
+
+    return html.Div(
+        [
+            html.Div(
+                [
+                    html.H4(title, className="chart-card-title"),
+                    html.P(subtitle, className="chart-card-subtitle"),
+                ],
+                className="chart-card-head",
+            ),
+            body,
+        ],
+        className="chart-card",
     )

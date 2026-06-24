@@ -5,6 +5,7 @@ from dash import Input, Output, callback, html
 
 from src.charts import build_empty_figure
 from src.data_cleaning import apply_filters, prepare_dashboard_data
+from src.disease_intelligence import build_environmental_context_cards
 from src.google_sheets import GoogleSheetsConnectionError, load_dashboard_datasets
 from src.maps import build_regions_map
 from src.official_analytics import build_executive_kpis
@@ -29,10 +30,11 @@ def layout():
             page_header(
                 "نظرة عامة تنفيذية",
                 "لوحة قيادة عربية تجمع البنية الصحية والطلب التشغيلي والمخاطر الإقليمية الرسمية، مع مقارنة مركزة بين السعودية وعسير والقصيم لدعم القرار على مستوى القيادة.",
-                eyebrow="Executive Overview",
+                eyebrow="النظرة التنفيذية",
             ),
             html.Div(id="overview-alerts", className="message-stack"),
             html.Div(id="overview-kpis", className="kpi-grid"),
+            html.Div(id="overview-live-context", className="kpi-grid"),
             html.Div(
                 [
                     chart_card(
@@ -76,6 +78,7 @@ def layout():
 @callback(
     Output("overview-alerts", "children"),
     Output("overview-kpis", "children"),
+    Output("overview-live-context", "children"),
     Output("overview-capacity-chart", "figure"),
     Output("overview-trend-chart", "figure"),
     Output("overview-ranking-chart", "figure"),
@@ -106,7 +109,7 @@ def refresh_overview(province, gender, start_date, end_date, _):
                 "مناطق الأولوية",
             ]
         ]
-        return [warning_card(str(exc), title="تعذر الاتصال بمصدر البيانات", tone="danger")], placeholders, error_figure, error_figure, error_figure, error_figure
+        return [warning_card(str(exc), title="تعذر الاتصال بمصدر البيانات", tone="danger")], placeholders, placeholders[:4], error_figure, error_figure, error_figure, error_figure
 
     alerts = []
     alerts.extend(_build_alerts(validation["errors"], "danger", "خطأ جودة بيانات"))
@@ -116,10 +119,15 @@ def refresh_overview(province, gender, start_date, end_date, _):
         kpi_card(metric["label"], metric["value"], metric["hint"], accent="teal" if index % 2 == 0 else "cyan")
         for index, metric in enumerate(kpis)
     ]
+    live_cards = [
+        kpi_card(metric["label"], metric["value"], metric["hint"], accent="cyan" if index % 2 == 0 else "teal")
+        for index, metric in enumerate(build_environmental_context_cards(filtered_data, province))
+    ]
 
     return (
         alerts,
         kpi_cards,
+        live_cards,
         build_focus_capacity_chart(filtered_data),
         build_utilization_focus_chart(filtered_data),
         build_regional_ranking_chart(filtered_data),

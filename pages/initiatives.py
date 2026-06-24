@@ -74,7 +74,7 @@ def layout():
             page_header(
                 "الخدمات والجودة",
                 "صفحة مخصصة لفهم أين يذهب الطلب الصحي، وكيف تتحرك الجاهزية بين المناطق، وما الذي يجعل عسير والقصيم أكثر أو أقل استعداداً من غيرهما.",
-                eyebrow="Service Quality",
+                eyebrow="الخدمات والجودة",
             ),
             html.Div(id="quality-alert", className="message-stack"),
             html.Div(

@@ -9,10 +9,13 @@
 
 - تطبيق Dash متعدد الصفحات مع `server = app.server`
 - واجهة عربية RTL تنفيذية
+- صفحة داخلية للمصادر والمنهجية تشرح الرسمي المباشر مقابل المؤشرات المشتقة
+- صفحة عربية كاملة للأمراض المعدية مبنية على جداول الكتاب الإحصائي السنوي لوزارة الصحة
 - تخزين مؤقت 5 دقائق لبيانات Google Sheets
 - دعم `GOOGLE_SERVICE_ACCOUNT_JSON` للنشر و `GOOGLE_SERVICE_ACCOUNT_JSON_FILE` للتشغيل المحلي
 - ملف `official_google_sheets_seed.xlsx` مبني من مصادر سعودية رسمية ومهيأ لرفعه إلى Google Sheets
 - ملفات تفصيلية إضافية لعسير والقصيم داخل `data/official_curated/`
+- جميع النصوص الظاهرة داخل التطبيق بالعربية فقط
 
 ## Project Structure
 
@@ -31,8 +34,11 @@ data/
 pages/
 scripts/
   build_official_seed_data.py
+  extract_arabic_disease_intelligence.py
   generate_synthetic_demo_data.py
 src/
+  disease_intelligence.py
+  official_data_pipeline.py
 ```
 
 ## Environment Variables
@@ -84,6 +90,71 @@ pip install -r requirements.txt
 .venv\Scripts\python.exe scripts\build_official_seed_data.py
 ```
 
+### 3. استخراج طبقة الأمراض المعدية من الكتاب الإحصائي
+
+يشغل هذا الأمر الاستخراج الآلي لجداول الأمراض المعدية من ملف وزارة الصحة الرسمي:
+
+```powershell
+.venv\Scripts\python.exe scripts\extract_arabic_disease_intelligence.py
+```
+
+سينتج ملفات CSV داخل:
+
+```text
+data/official_curated/diseases/
+```
+
+وأهم الملفات الناتجة:
+
+- `disease_catalog_ar.csv`
+- `communicable_diseases_by_region_ar.csv`
+- `communicable_diseases_by_month_ar.csv`
+- `communicable_diseases_by_age_ar.csv`
+- `communicable_diseases_by_gender_nationality_ar.csv`
+- `communicable_diseases_5_year_trend_ar.csv`
+- `tuberculosis_ar.csv`
+- `malaria_ar.csv`
+- `bilharzia_ar.csv`
+- `leishmaniasis_ar.csv`
+- `foodborne_outbreaks_ar.csv`
+- `intoxication_ar.csv`
+- `environmental_health_diseases_ar.csv`
+- `skipped_tables_report.csv` عند تعذر قراءة جدول مركب مع استمرار التنفيذ
+
+## Live Environmental Data
+
+The environmental, respiratory risk, and early warning pages support live refreshable data with caching.
+
+Recommended `.env` settings:
+
+```env
+LIVE_DATA_PROVIDER=open_meteo
+LIVE_DATA_CACHE_SECONDS=900
+OPENWEATHER_API_KEY=
+NCM_API_USERNAME=
+NCM_API_PASSWORD=
+```
+
+Notes:
+
+- `open_meteo` is the default live provider in the current version and works without a paid token.
+- `NCM` credentials are prepared at the configuration layer for future direct integration.
+- Clicking the in-app refresh button clears both Google Sheets cache and live environmental cache.
+
+## Documentation PDF
+
+Generate the Arabic PDF documentation for the client with:
+
+```powershell
+.venv\Scripts\python.exe scripts\generate_documentation_pdf.py
+```
+
+Output file:
+
+```text
+docs/asir_community_pulse_documentation_ar.pdf
+```
+
 ### 3. إنشاء `.env`
 
 للتشغيل السريع محليًا:
@@ -125,6 +196,8 @@ http://127.0.0.1:8050
   - تفصيل داخلي لعسير بين تجمع عسير وتجمع بيشة
 - `data/official_curated/asir_qassim_workforce_2024.csv`
   - قوى عاملة صحية مختصرة لعسير والقصيم
+- `data/official_curated/diseases/*.csv`
+  - طبقة أمراض معدية عربية مستخرجة من الكتاب الإحصائي السنوي لوزارة الصحة 2024
 
 ## Direct Official Sources Used
 
@@ -145,6 +218,7 @@ http://127.0.0.1:8050
   - `clean_regions_master`
   - أجزاء كبيرة من `health_facilities`
   - الملفات داخل `data/official_curated/`
+  - ملفات `data/official_curated/diseases/` المستخرجة من جداول وزارة الصحة الرسمية
 - الجداول التالية **تمثيلية/مشتقة** ولكنها **معايرة على الأساس الرسمي الإقليمي** حتى يعمل التطبيق الحالي ويعرض خرائط وبطاقات ورسومًا على مستوى السجل:
   - `survey_responses_simulated`
   - `complaints_feedback`
@@ -156,6 +230,13 @@ http://127.0.0.1:8050
 
 - البنية الصحية والسكان والوصول والرضا والاتجاهات الأساسية مبنية على مصادر رسمية
 - بيانات السجل الفردي والتوزيعات الدقيقة والتنبؤ داخل واجهة العرض الحالية هي طبقة مشتقة لخدمة المنتج والعرض
+
+## ملاحظات مهمة حول واجهة الأمراض المعدية والتنبؤ
+
+- جميع النصوص الظاهرة للمستخدم داخل التطبيق باللغة العربية فقط
+- ليست كل الأمراض متاحة حسب المنطقة والشهر والعمر والجنس والجنسية في الوقت نفسه؛ يختلف ذلك حسب الجدول الرسمي الأصلي
+- التوقعات المرضية الحالية تشغيلية واستباقية، وتعتمد على السلاسل الزمنية الرسمية المتاحة، ولا تمثل تشخيصًا سريريًا مباشرًا
+- التحليل البيئي المرتبط بالمرض داخل الصفحة هو تحليل سياقي داعم للقرار، وليس إثباتًا سببيًا مباشرًا بين الطقس والمرض
 
 ## Google Sheets Tabs Expected
 

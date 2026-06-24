@@ -23,7 +23,7 @@ def layout():
             page_header(
                 "المقارنة الإقليمية",
                 "تحليل مباشر يضع السعودية وعسير والقصيم في إطار واحد، ثم يهبط إلى تفصيل محافظات القصيم وتجمعات عسير لإظهار الفروق التي تهم صانع القرار.",
-                eyebrow="Regional Comparison",
+                eyebrow="المقارنة الإقليمية",
             ),
             html.Div(id="regional-alert", className="message-stack"),
             html.Div(

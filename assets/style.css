@@ -141,6 +141,26 @@ a {
     font-weight: 600;
 }
 
+.filter-label--dark {
+    margin-top: 0;
+    color: var(--text-dark);
+}
+
+.page-filter-card {
+    padding: 24px;
+}
+
+.page-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.page-filter-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .filter-dropdown .Select-control,
 .filter-dropdown .Select-menu-outer,
 .DateRangePickerInput,
@@ -163,17 +183,23 @@ a {
 }
 
 .filter-dropdown .Select-value-label,
+.filter-dropdown .Select-value,
 .filter-dropdown .Select--single > .Select-control .Select-value,
 .filter-dropdown .Select-placeholder,
 .filter-dropdown .Select-arrow-zone,
 .filter-dropdown .Select-input input,
 .filter-dropdown .Select-clear-zone,
-.filter-dropdown .VirtualizedSelectOption {
+.filter-dropdown .VirtualizedSelectOption,
+.filter-dropdown .Select-option,
+.filter-dropdown .Select-option.is-focused,
+.filter-dropdown .Select-option.is-selected {
     color: var(--text-dark) !important;
 }
 
 .filter-dropdown .VirtualizedSelectFocusedOption,
-.filter-dropdown .VirtualizedSelectSelectedOption {
+.filter-dropdown .VirtualizedSelectSelectedOption,
+.filter-dropdown .Select-option.is-focused,
+.filter-dropdown .Select-option.is-selected {
     background: rgba(40, 214, 196, 0.18) !important;
     color: var(--text-dark) !important;
     font-weight: 700;
@@ -229,6 +255,32 @@ a {
 }
 
 .refresh-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(40, 214, 196, 0.30);
+}
+
+.page-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.download-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+    color: var(--bg-main);
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 16px 30px rgba(40, 214, 196, 0.24);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.download-link:hover {
+    color: var(--bg-main);
     transform: translateY(-1px);
     box-shadow: 0 18px 34px rgba(40, 214, 196, 0.30);
 }
@@ -425,6 +477,10 @@ a {
     gap: 16px;
 }
 
+.kpi-grid--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .kpi-card {
     position: relative;
     min-height: 154px;
@@ -542,6 +598,55 @@ a {
     padding: 2px 4px 8px;
 }
 
+.data-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.data-table-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    align-items: stretch;
+}
+
+.data-table-row--head {
+    margin-bottom: 2px;
+}
+
+.data-table-cell {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--card-soft);
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.data-table-cell--head {
+    background: linear-gradient(135deg, rgba(0, 168, 143, 0.12), rgba(40, 214, 196, 0.10));
+    color: var(--text-dark);
+    font-weight: 800;
+}
+
+.source-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 168, 143, 0.12), rgba(40, 214, 196, 0.18));
+    color: var(--accent-teal);
+    font-weight: 800;
+}
+
+.source-link:hover {
+    color: var(--bg-panel);
+    background: linear-gradient(135deg, rgba(0, 168, 143, 0.30), rgba(40, 214, 196, 0.34));
+}
+
 .metric-list-empty {
     color: var(--text-muted);
     line-height: 1.9;
@@ -612,6 +717,14 @@ a {
     .kpi-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .kpi-grid--four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .page-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 1180px) {
@@ -633,6 +746,15 @@ a {
         grid-template-columns: 1fr;
     }
 
+    .page-filter-grid,
+    .page-filter-grid--two {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table-row {
+        grid-template-columns: 1fr;
+    }
+
     .hero-card {
         flex-direction: column;
     }
@@ -641,6 +763,14 @@ a {
 @media (max-width: 768px) {
     .kpi-grid {
         grid-template-columns: 1fr;
+    }
+
+    .kpi-grid--four {
+        grid-template-columns: 1fr;
+    }
+
+    .page-filter-card {
+        padding: 18px;
     }
 
     .hero-card {

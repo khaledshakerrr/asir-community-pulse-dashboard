@@ -1,0 +1,111 @@
+from __future__ import annotations
+
+
+def get_source_registry() -> list[dict[str, str]]:
+    return [
+        {
+            "source_name": "وزارة الصحة - الكتاب الإحصائي السنوي 2024",
+            "category": "الصحة الرسمية",
+            "status": "مستخدم فعليًا",
+            "description": "مرجع رسمي للبنية الصحية، المستشفيات، الأسرة، المؤشرات التشغيلية، وزيارات عيادات السكري.",
+            "url": "https://www.moh.gov.sa/en/Ministry/Statistics/book/Documents/Statistical-Yearbook-2024.xlsx",
+        },
+        {
+            "source_name": "وزارة الصحة - المكتبة المفتوحة للبيانات",
+            "category": "الصحة الرسمية",
+            "status": "مرجع فعلي",
+            "description": "بوابة البيانات المفتوحة لوزارة الصحة وتشمل مؤشرات صحية، زيارات السكري، التطعيمات، ومؤشرات المناطق الصحية.",
+            "url": "https://www.moh.gov.sa/en/ministry/opendata/pages/open-data-library.aspx",
+        },
+        {
+            "source_name": "وزارة الصحة - مسح المعلومات الصحية",
+            "category": "الصحة الرسمية",
+            "status": "مرجع فعلي",
+            "description": "يشرح الإطار الرسمي لتتبع عوامل الخطر المؤدية للأمراض المزمنة وزيارات المرافق الصحية على مستوى المملكة.",
+            "url": "https://www.moh.gov.sa/en/ministry/statistics/pages/healthinformatics.aspx",
+        },
+        {
+            "source_name": "وزارة الصحة - مؤشرات الصحة الرئيسة",
+            "category": "الصحة الرسمية",
+            "status": "مرجع فعلي",
+            "description": "مرجع رسمي متعدد السنوات لمؤشرات البنية الصحية، الكفاءة، الأمراض المزمنة، الرعاية الوقائية، والاستعداد الصحي.",
+            "url": "https://www.moh.gov.sa/en/ministry/statistics/indicator/pages/default.aspx",
+        },
+        {
+            "source_name": "الهيئة العامة للإحصاء - الصفحة الرئيسية",
+            "category": "السكان والإحصاء",
+            "status": "مرجع فعلي",
+            "description": "مرجع رسمي للمؤشرات السكانية والاقتصادية والاجتماعية والبيئية، ويعرض تقدير سكان المملكة 2024.",
+            "url": "https://www.stats.gov.sa/en/",
+        },
+        {
+            "source_name": "الهيئة العامة للإحصاء - منشآت الرعاية الصحية والقوى العاملة 2024",
+            "category": "السكان والإحصاء",
+            "status": "مستخدم فعليًا",
+            "description": "مصدر رسمي للمستشفيات والأسرة والرعاية الأولية والقوى العاملة الصحية على مستوى المناطق.",
+            "url": "https://www.stats.gov.sa/documents/d/guest/healthcare-establishments-and-workforce-statistics-2024-en",
+        },
+        {
+            "source_name": "الهيئة العامة للإحصاء - إحصاءات الصحة 2024",
+            "category": "السكان والإحصاء",
+            "status": "مستخدم فعليًا",
+            "description": "مرجع رسمي لمؤشرات الاستخدام الصحي والوصول والرضا والخدمات الرقمية والصحة العامة.",
+            "url": "https://www.stats.gov.sa/documents/d/guest/healthcare-statistics-publication-2024-en-xlsx",
+        },
+        {
+            "source_name": "الهيئة العامة للإحصاء - نتائج تفصيلية للقصيم",
+            "category": "السكان والإحصاء",
+            "status": "مستخدم فعليًا",
+            "description": "مرجع تفصيلي رسمي لمحافظات القصيم وسكانها حسب المحافظة والجنس والجنسية.",
+            "url": "https://www.stats.gov.sa/documents/20117/2435265/lqsym_4.pdf/93a6ebd5-514b-c787-17e4-239d36b8cce3?t=1735192378913",
+        },
+        {
+            "source_name": "المركز الوطني للأرصاد - معلمات الطقس",
+            "category": "الطقس والبيئة",
+            "status": "مرجع فعلي",
+            "description": "يوثق معلمات الحرارة والرطوبة والضغط والرياح والأمطار والإشعاع ضمن واجهة NCM.",
+            "url": "https://api-doc.ncm.gov.sa/en/api/available-parameters/weather-parameter",
+        },
+        {
+            "source_name": "المركز الوطني للأرصاد - التوثيق الأمني للوصول",
+            "category": "الطقس والبيئة",
+            "status": "مرجع فعلي",
+            "description": "يوضح آلية الحصول على رمز وصول OAuth لاستخدام واجهات NCM الرسمية عند توفر بيانات الاعتماد.",
+            "url": "https://api-doc.ncm.gov.sa/en/api/request/api-requests-oauth-authentification",
+        },
+        {
+            "source_name": "المركز الوطني للأرصاد - معلمات الجسيمات وجودة الهواء",
+            "category": "الطقس والبيئة",
+            "status": "مرجع فعلي",
+            "description": "يوثق PM2.5 وPM10 ومؤشرات جودة الهواء والغبار ضمن واجهة NCM.",
+            "url": "https://api-doc.ncm.gov.sa/en/api/available-parameters/particles",
+        },
+        {
+            "source_name": "Open-Meteo - توثيق الطقس",
+            "category": "الطقس والبيئة",
+            "status": "مستخدم تشغيليًا في النسخة الحالية",
+            "description": "مزود حي عام بدون مفتاح لتشغيل الرصد الحالي والتوقعات القصيرة المدى عند غياب اعتماد NCM.",
+            "url": "https://open-meteo.com/en/docs",
+        },
+        {
+            "source_name": "Open-Meteo - توثيق جودة الهواء",
+            "category": "الطقس والبيئة",
+            "status": "مستخدم تشغيليًا في النسخة الحالية",
+            "description": "مزود حي عام لمؤشرات AQI وPM2.5 وPM10 وNO2 وSO2 وO3 والغبار والأشعة فوق البنفسجية.",
+            "url": "https://open-meteo.com/en/docs/air-quality-api",
+        },
+        {
+            "source_name": "OpenWeather - بيانات الطقس الحالية",
+            "category": "الطقس والبيئة",
+            "status": "اختياري عند تفعيل المفتاح",
+            "description": "مزود اختياري إضافي للطقس الحالي والتوقعات القصيرة إذا تم توفير مفتاح OPENWEATHER_API_KEY.",
+            "url": "https://openweathermap.org/current",
+        },
+        {
+            "source_name": "OpenWeather - تلوث الهواء",
+            "category": "الطقس والبيئة",
+            "status": "اختياري عند تفعيل المفتاح",
+            "description": "مزود اختياري إضافي لمؤشرات التلوث الهوائي الحالية والتوقعات القصيرة.",
+            "url": "https://openweathermap.org/api/air-pollution",
+        },
+    ]

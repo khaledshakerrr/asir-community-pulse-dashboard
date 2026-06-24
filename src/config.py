@@ -8,13 +8,17 @@ from flask_caching import Cache
 load_dotenv()
 
 APP_TITLE = "منصة نبض المجتمع"
-APP_SUBTITLE = "منصة تحليلية تنفيذية للمؤشرات الصحية داخل المملكة"
+APP_SUBTITLE = "منصة تنفيذية عربية للمؤشرات والتحليلات والتنبؤات الصحية داخل المملكة العربية السعودية"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "").strip()
 GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
 GOOGLE_SERVICE_ACCOUNT_JSON_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON_FILE", "").strip()
 LOCAL_DATA_WORKBOOK = os.getenv("LOCAL_DATA_WORKBOOK", "data/official_google_sheets_seed.xlsx").strip()
 PREFER_LOCAL_DEMO_DATA = os.getenv("PREFER_LOCAL_DEMO_DATA", "1").strip() == "1"
+LIVE_DATA_PROVIDER = os.getenv("LIVE_DATA_PROVIDER", "open_meteo").strip().lower()
+NCM_API_USERNAME = os.getenv("NCM_API_USERNAME", "").strip()
+NCM_API_PASSWORD = os.getenv("NCM_API_PASSWORD", "").strip()
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY", "").strip()
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets.readonly",
@@ -22,6 +26,7 @@ SCOPES = [
 ]
 
 CACHE_TIMEOUT_SECONDS = int(os.getenv("CACHE_TIMEOUT_SECONDS", "300"))
+LIVE_DATA_CACHE_SECONDS = int(os.getenv("LIVE_DATA_CACHE_SECONDS", "900"))
 HIGH_RISK_THRESHOLD = float(os.getenv("HIGH_RISK_THRESHOLD", "75"))
 FONT_FAMILY = "Cairo, Tajawal, 'Segoe UI', sans-serif"
 
@@ -143,6 +148,13 @@ EXPECTED_COLUMNS = {
         "region_name_ar",
         "physicians_total_all_sectors",
         "nurses_and_midwives_total_all_sectors",
+    ],
+    "source_catalog": [
+        "artifact_name",
+        "source_type",
+        "source_files",
+        "primary_focus",
+        "notes",
     ],
 }
 

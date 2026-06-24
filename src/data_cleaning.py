@@ -207,7 +207,7 @@ def prepare_dashboard_data(data_bundle: dict) -> dict:
         "tables": tables,
         "available_sheets": data_bundle.get("available_sheets", []),
         "loaded_at": data_bundle.get("loaded_at"),
-        "source_label": data_bundle.get("source_label", "Unknown Source"),
+        "source_label": data_bundle.get("source_label", "مصدر غير محدد"),
     }
 
 
@@ -338,5 +338,5 @@ def apply_filters(
         "tables": tables,
         "available_sheets": cleaned_data.get("available_sheets", []),
         "loaded_at": cleaned_data.get("loaded_at"),
-        "source_label": cleaned_data.get("source_label", "Unknown Source"),
+        "source_label": cleaned_data.get("source_label", "مصدر غير محدد"),
     }
