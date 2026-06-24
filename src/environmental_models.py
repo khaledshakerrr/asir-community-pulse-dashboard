@@ -15,6 +15,22 @@ from src.official_analytics import get_region_summary
 SUPPORTED_PROVINCES = {"عسير", "القصيم"}
 
 
+def _normalize_arabic_key(value: object) -> str:
+    text = str(value or "").strip()
+    replacements = {
+        "أ": "ا",
+        "إ": "ا",
+        "آ": "ا",
+        "ى": "ي",
+        "ؤ": "و",
+        "ئ": "ي",
+        "ة": "ه",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
+    return "".join(text.split())
+
+
 def _clip(value: float | int | None, low: float, high: float) -> float:
     if value is None or pd.isna(value):
         return 0.0
@@ -349,9 +365,11 @@ def build_environmental_current_frame(filtered_data: dict, province: str | None 
     current["age_and_demand_component"] = current["age_and_demand_component"].fillna(50)
     current = _compose_current_scores(current)
 
-    if province and province in SUPPORTED_PROVINCES:
-        current = current[current["province_ar"] == province].copy()
-    elif province and province not in SUPPORTED_PROVINCES and province != "الكل":
+    normalized_province = _normalize_arabic_key(province)
+    normalized_supported = {_normalize_arabic_key(item) for item in SUPPORTED_PROVINCES}
+    if normalized_province in normalized_supported:
+        current = current[current["province_ar"].apply(_normalize_arabic_key) == normalized_province].copy()
+    elif normalized_province and normalized_province not in {"الكل", "السعوديه", "السعودية"}:
         return pd.DataFrame()
 
     return current.sort_values(["province_ar", "respiratory_risk_index"], ascending=[True, False]).reset_index(drop=True)
@@ -366,9 +384,11 @@ def build_environmental_forecast_frame(filtered_data: dict, province: str | None
     forecast = _aggregate_forecast(forecast, filtered_data)
     forecast = _compose_forecast_scores(forecast)
 
-    if province and province in SUPPORTED_PROVINCES:
-        forecast = forecast[forecast["province_ar"] == province].copy()
-    elif province and province not in SUPPORTED_PROVINCES and province != "الكل":
+    normalized_province = _normalize_arabic_key(province)
+    normalized_supported = {_normalize_arabic_key(item) for item in SUPPORTED_PROVINCES}
+    if normalized_province in normalized_supported:
+        forecast = forecast[forecast["province_ar"].apply(_normalize_arabic_key) == normalized_province].copy()
+    elif normalized_province and normalized_province not in {"الكل", "السعوديه", "السعودية"}:
         return pd.DataFrame()
 
     return forecast.sort_values(["forecast_date", "respiratory_risk_index"], ascending=[True, False]).reset_index(drop=True)
