@@ -393,11 +393,9 @@ def build_disease_kpis(bundle: dict, filters: dict[str, str | None]) -> list[dic
         if not summary.empty:
             top_month = str(summary.iloc[0]["month_ar"])
 
-    cases_per_100k = None
     priority_label = "غير متاح"
     if not filtered_burden.empty:
         focus_row = filtered_burden.sort_values("cases", ascending=False).iloc[0]
-        cases_per_100k = focus_row.get("cases_per_100k")
         priority_label = str(focus_row.get("priority_level_ar", "غير متاح"))
 
     return [
@@ -407,7 +405,6 @@ def build_disease_kpis(bundle: dict, filters: dict[str, str | None]) -> list[dic
         {"label": "أعلى منطقة صحية", "value": top_region, "hint": "المنطقة ذات العبء الأعلى ضمن المرشح الحالي"},
         {"label": "أعلى فئة عمرية تأثرًا", "value": top_age, "hint": "استنادًا إلى الجدول العمري الوطني المتاح"},
         {"label": "أعلى شهر من حيث الحالات", "value": top_month, "hint": "استنادًا إلى السلسلة الشهرية الوطنية المتاحة"},
-        {"label": "معدل الحالات لكل 100 ألف", "value": f"{cases_per_100k:.1f}" if cases_per_100k is not None and not pd.isna(cases_per_100k) else "غير متاح", "hint": "يُحسب عند توفر عبء الحالات والسكان للمنطقة المختارة"},
         {"label": "مستوى أولوية التدخل", "value": priority_label, "hint": "مشتق من عبء المرض والطاقة الصحية ووقت الانتظار"},
     ]
 

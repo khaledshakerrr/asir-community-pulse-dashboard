@@ -11,3 +11,9 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .DS_Store
+render_api.txt
+.env.*
+!.env.example
+.local/
+.release/
+outputs/

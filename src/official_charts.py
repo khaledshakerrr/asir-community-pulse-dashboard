@@ -114,7 +114,7 @@ def build_qassim_population_chart(filtered_data: dict) -> go.Figure:
 def build_asir_cluster_capacity_chart(filtered_data: dict) -> go.Figure:
     frame = get_asir_clusters(filtered_data)
     if frame.empty:
-        return build_empty_figure("تفصيل تجمعات عسير غير متاح ضمن النطاق الحالي.")
+        return build_empty_figure("تفصيل تجمع عسير غير متاح ضمن النطاق الحالي.")
 
     long_frame = frame.melt(
         id_vars=["cluster_name_ar"],

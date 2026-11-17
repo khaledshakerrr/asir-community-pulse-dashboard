@@ -5,6 +5,8 @@
 - `Google Sheets` كمصدر الإنتاج الأساسي
 - ملف `Seed` محلي رسمي/مشتق للتشغيل السريع قبل رفع البيانات إلى Google Sheets
 
+For the client update, follow the [Windows, GitHub, and Render guide](docs/RUN_AND_DEPLOY.md). It includes the safe fresh-clone workflow for applying `outputs/asir-client-update.zip` to the existing repository.
+
 ## What Is Included
 
 - تطبيق Dash متعدد الصفحات مع `server = app.server`
@@ -15,7 +17,14 @@
 - دعم `GOOGLE_SERVICE_ACCOUNT_JSON` للنشر و `GOOGLE_SERVICE_ACCOUNT_JSON_FILE` للتشغيل المحلي
 - ملف `official_google_sheets_seed.xlsx` مبني من مصادر سعودية رسمية ومهيأ لرفعه إلى Google Sheets
 - ملفات تفصيلية إضافية لعسير والقصيم داخل `data/official_curated/`
+- قسم رعاية الأمراض المزمنة داخل صفحة المقارنة الإقليمية: زيارات عيادات السكري لعامي 2023 و2024، وطاقة المرافق المتخصصة للأعوام 2022–2024
+- مؤشرات وطنية إضافية: زيارات التأهيل بعد البتر المرتبط بالسكري 2023 و2024، ومرضى الغسيل الكلوي حسب نوع التنقية والقطاع الصحي لعام 2024
+- شعار نبض المجتمع الجديد بحجم واضح، وتصحيح مسمى تجمع عسير، وإزالة بطاقة معدل الحالات لكل 100 ألف من مؤشرات الأمراض المعدية
 - جميع النصوص الظاهرة داخل التطبيق بالعربية فقط
+
+The chronic-care CSVs are included in `data/official_curated/chronic_care/` and work with either local data or the existing Google Sheets connection; no new Google Sheets tabs are required. Visits are clinic encounters, not unique patients or disease prevalence. The source uses health regions in 2022/2023 and health clusters in 2024, so the annual figures are presented as published snapshots rather than a continuous comparable trend.
+
+At the bottom of **المقارنة الإقليمية**, the **التأهيل المرتبط بالسكري والغسيل الكلوي** section shows national data independently of regional filters. Diabetes-related post-amputation rehabilitation counts are **visits**, not operations or unique patients. Dialysis data count **patients** across all sectors in 2024; national treatment totals are kept separate from sector details. The dialysis tables inside the 2023 book are labeled 2021 and are excluded from this view.
 
 ## Project Structure
 
@@ -78,9 +87,9 @@ APP_PASSWORD=optional_password
 pip install -r requirements.txt
 ```
 
-### 2. بناء ملف البيانات الرسمي المحلي
+### 2. إعادة بناء ملف البيانات الرسمي المحلي (اختياري)
 
-هذا الأمر يولد:
+ملف البيانات المحلي المجهز موجود بالفعل؛ لا تحتاج إلى إعادة بنائه لتشغيل تحديث العميل. عند تحديث المصادر الأصلية فقط، هذا الأمر يولد:
 
 - `data/official_google_sheets_seed.xlsx`
 - ملفات CSV موافقة لتبويبات Google Sheets داخل `data/official_google_sheet_tabs/`
@@ -90,7 +99,7 @@ pip install -r requirements.txt
 .venv\Scripts\python.exe scripts\build_official_seed_data.py
 ```
 
-### 3. استخراج طبقة الأمراض المعدية من الكتاب الإحصائي
+### 3. استخراج طبقة الأمراض المعدية من الكتاب الإحصائي (اختياري)
 
 يشغل هذا الأمر الاستخراج الآلي لجداول الأمراض المعدية من ملف وزارة الصحة الرسمي:
 
@@ -254,14 +263,21 @@ http://127.0.0.1:8050
 
 ## Deploying to Render
 
-- استخدم `GOOGLE_SHEET_ID`
-- استخدم `GOOGLE_SERVICE_ACCOUNT_JSON`
-- عطل المصدر المحلي عبر `PREFER_LOCAL_DEMO_DATA=0`
-- أمر التشغيل:
+Use the existing Render web service and preserve its working environment variables, including Google Sheets credentials. For production using Google Sheets, retain `PREFER_LOCAL_DEMO_DATA=0`.
+
+Build Command:
 
 ```text
-web: gunicorn app:server
+pip install -r requirements.txt
 ```
+
+Start Command:
+
+```text
+gunicorn app:server --bind 0.0.0.0:$PORT
+```
+
+The `web:` prefix belongs only in `Procfile`; do not enter it in Render's Start Command field. Follow the [deployment guide](docs/RUN_AND_DEPLOY.md#3-update-the-existing-render-service) for repository, branch, Root Directory, and verification steps. These commands follow Render's [Python deployment](https://render.com/docs/deploy-flask) and [port binding](https://render.com/docs/web-services#port-binding) guidance.
 
 ## Notes
 

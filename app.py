@@ -117,7 +117,7 @@ app.layout = html.Div(
                     [
                         html.Div(
                             [
-                                html.Img(src="/assets/asir-logo.png", className="brand-logo", alt="Asir Logo"),
+                                html.Img(src="/assets/logo_final.jpeg", className="brand-logo", alt="شعار نبض المجتمع"),
                                 html.Div(
                                     [
                                         html.H1(APP_TITLE, className="brand-title"),

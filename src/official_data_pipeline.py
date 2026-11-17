@@ -10,18 +10,41 @@ from src.source_registry import get_source_registry
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CATALOG_FALLBACK_PATH = PROJECT_ROOT / "data" / "official_google_sheet_tabs" / "source_catalog.csv"
+CHRONIC_CARE_CATALOG_ROWS = [
+    {
+        "artifact_name": "لقطات خدمات رعاية السكري والمرافق المتخصصة",
+        "source_type": "رسمي مباشر",
+        "source_files": "الكتب الإحصائية السنوية لوزارة الصحة 2022 و2023 و2024",
+        "primary_focus": "الطلب على عيادات السكري والطاقة المتخصصة في السعودية وعسير وبيشة والقصيم",
+        "notes": "زيارات السكري 2023 و2024، ومرافق الوزارة 2022–2024. تُحفظ جغرافية المصدر ويُفصل إجمالي تجمع عسير عن صفّي عسير وبيشة.",
+    },
+    {
+        "artifact_name": "زيارات التأهيل بعد البتر المرتبط بالسكري",
+        "source_type": "رسمي مباشر",
+        "source_files": "الكتاب الإحصائي لوزارة الصحة 2023، جدول 4-37؛ و2024، جدول 4-45",
+        "primary_focus": "زيارات التأهيل الطبي المرتبطة بالسكري على مستوى المملكة لعامي 2023 و2024",
+        "notes": "زيارات خدمة بوزارة الصحة، وليست أعداد عمليات البتر أو المرضى الفريدين أو معدل المضاعفات. لا يوجد تفصيل إقليمي في الجدولين.",
+    },
+    {
+        "artifact_name": "مرضى الغسيل الكلوي حسب نوع التنقية والقطاع",
+        "source_type": "رسمي مباشر",
+        "source_files": "الكتاب الإحصائي لوزارة الصحة 2024، جدول 4-42؛ مطابقة الإجمالي بالجدول 4-43",
+        "primary_focus": "مرضى التنقية الدموية والبريتونية حسب القطاع الصحي على مستوى المملكة لعام 2024",
+        "notes": "أعداد مرضى بجميع القطاعات. الإجمالي المنشور منفصل عن تفاصيل القطاعات ولا يجمع معها مرة أخرى. يُستخدم عام 2024 فقط.",
+    },
+]
 
 
 def load_source_catalog(data_bundle: dict | None = None) -> pd.DataFrame:
     if data_bundle and "tables" in data_bundle:
         catalog = data_bundle["tables"].get("source_catalog", pd.DataFrame()).copy()
         if not catalog.empty:
-            return catalog.fillna("")
+            return pd.concat([catalog, pd.DataFrame(CHRONIC_CARE_CATALOG_ROWS)], ignore_index=True).fillna("")
 
     if CATALOG_FALLBACK_PATH.is_file():
-        return pd.read_csv(CATALOG_FALLBACK_PATH).fillna("")
+        return pd.concat([pd.read_csv(CATALOG_FALLBACK_PATH), pd.DataFrame(CHRONIC_CARE_CATALOG_ROWS)], ignore_index=True).fillna("")
 
-    return pd.DataFrame(columns=["artifact_name", "source_type", "source_files", "primary_focus", "notes"])
+    return pd.DataFrame(CHRONIC_CARE_CATALOG_ROWS)
 
 
 def build_source_overview(data_bundle: dict | None = None) -> list[dict[str, str]]:
@@ -57,6 +80,16 @@ def build_methodology_rows(data_bundle: dict | None = None) -> list[dict[str, st
         {
             "label": "التنبؤات الحالية",
             "value": "تنبؤات تشغيلية استرشادية للطلب الصحي، وليست تشخيصًا سريريًا مباشرًا للأمراض",
+            "tone": "neutral",
+        },
+        {
+            "label": "بيانات الرعاية المزمنة الرسمية",
+            "value": "زيارات عيادات السكري تقيس استخدام الخدمة وليست أعداد مرضى أو نسب انتشار. المرافق تشمل وزارة الصحة فقط. بيانات المناطق الصحية والتجمعات الصحية لقطات سنوية مستقلة، دون افتراض تطابق الحدود أو تحويلها إلى سلسلة شهرية.",
+            "tone": "neutral",
+        },
+        {
+            "label": "مؤشرات التأهيل والغسيل الكلوي الوطنية",
+            "value": "التأهيل يقيس زيارات ما بعد البتر المرتبط بالسكري، وبيانات الغسيل الكلوي تقيس أعداد المرضى بجميع القطاعات. لا تُنسب هذه القيم الوطنية إلى عسير ولا تتأثر بالمرشحات الإقليمية. إجماليات المرضى منفصلة عن تفاصيل القطاعات لمنع التكرار.",
             "tone": "neutral",
         },
     ]
